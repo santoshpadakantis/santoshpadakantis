@@ -192,11 +192,6 @@
 </div>
 
 <div class="action-pane">
-    <button class="ap-btn primary" id="btnOptimize">
-        <svg viewBox="0 0 16 16"><path d="M8 1l7 4v6l-7 4-7-4V5l7-4zm0 2L3 5.7v4.6L8 13l5-2.7V5.7L8 3z"/></svg>
-        Optimise &amp; Allocate
-    </button>
-    <div class="ap-sep"></div>
     <button class="ap-btn active" id="btnOutbound" data-dir="OUT">
         <svg viewBox="0 0 16 16"><path d="M1 8h11l-3-3 1-1 5 4-5 4-1-1 3-3H1z"/></svg>
         Outbound loads dispatch
@@ -270,6 +265,10 @@
                 <svg class="chev" width="12" height="12" viewBox="0 0 12 12"><path d="M2 4l4 4 4-4" stroke="currentColor" stroke-width="1.5" fill="none"/></svg>
                 <div class="title">Loads needing dispatch</div>
                 <div class="summary" id="pendingSummary">0 loads &middot; 0 selected</div>
+                <button class="ap-btn primary" id="btnCreateDispatch" style="display:none;margin-left:auto">
+                    <svg viewBox="0 0 16 16"><path d="M1 8h11l-3-3 1-1 5 4-5 4-1-1 3-3H1z"/></svg>
+                    Create dispatch <span id="btnCreateDispatchCount"></span>
+                </button>
             </div>
             <div class="fasttab-body" style="padding:0">
                 <div class="grid-wrap">
@@ -530,16 +529,18 @@ const addDays = function(d, n) { var x = new Date(d); x.setDate(x.getDate()+n); 
 
 var pendingOrders = [
     // Outbound: finished bitumen ex Downer plants to customer sites
-    { dir:'OUT', loadId:'BIT-000142', custPO:'PO-TfNSW-88214',    prodOrder:'PROD-4501', cust:'Transport for NSW',                     ship:iso(today),            suburb:'M4 Motorway - Parramatta',    state:'NSW', zip:'2150', twFrom:'09:00', twTo:'12:00', weight:24000, volume:24.0, comp:'Tanker' },
-    { dir:'OUT', loadId:'BIT-000143', custPO:'PO-WCX-55019',      prodOrder:'PROD-4502', cust:'Sydney Motorway Corporation (WestConnex)',ship:iso(today),          suburb:'M8 Tunnel - Arncliffe',       state:'NSW', zip:'2205', twFrom:'08:00', twTo:'11:00', weight:26000, volume:26.0, comp:'HAZMAT' },
-    { dir:'OUT', loadId:'BIT-000144', custPO:'PO-TSN-70441',      prodOrder:'PROD-4503', cust:'Transurban Group',                      ship:iso(today),            suburb:'NorthConnex - Wahroonga',     state:'NSW', zip:'2076', twFrom:'13:00', twTo:'17:00', weight:22000, volume:22.0, comp:'Tanker' },
-    { dir:'OUT', loadId:'BIT-000145', custPO:'PO-TMR-31207',      prodOrder:'PROD-4504', cust:'Department of Transport and Main Roads',ship:iso(addDays(today,1)), suburb:'Bruce Hwy - Nambour',         state:'QLD', zip:'4560', twFrom:'10:00', twTo:'14:00', weight:20000, volume:20.0, comp:'Tanker' },
-    { dir:'OUT', loadId:'BIT-000146', custPO:'PO-MRWA-45820',     prodOrder:'PROD-4505', cust:'Main Roads Western Australia',          ship:iso(addDays(today,1)), suburb:'Great Northern Hwy - Muchea', state:'WA',  zip:'6501', twFrom:'09:00', twTo:'13:00', weight:28000, volume:28.0, comp:'HAZMAT' },
-    { dir:'OUT', loadId:'BIT-000147', custPO:'PO-FH-2211',        prodOrder:'PROD-4506', cust:'Fulton Hogan (JV partner)',             ship:iso(addDays(today,1)), suburb:'Hume Hwy - Goulburn',         state:'NSW', zip:'2580', twFrom:'11:00', twTo:'15:00', weight:24000, volume:24.0, comp:'Tanker' },
-    { dir:'OUT', loadId:'BIT-000148', custPO:'PO-BOR-99312',      prodOrder:'PROD-4507', cust:'Boral Asphalt (supply chain)',          ship:iso(addDays(today,2)), suburb:'Deer Park Batching Plant',    state:'VIC', zip:'3023', twFrom:'08:00', twTo:'12:00', weight:18000, volume:18.0, comp:'Tanker' },
-    { dir:'OUT', loadId:'BIT-000149', custPO:'PO-JH-51002',       prodOrder:'PROD-4508', cust:'John Holland Rail',                     ship:iso(addDays(today,2)), suburb:'Metro Tunnel - Kensington',   state:'VIC', zip:'3031', twFrom:'14:00', twTo:'18:00', weight:22000, volume:22.0, comp:'HAZMAT' },
-    { dir:'OUT', loadId:'BIT-000150', custPO:'PO-RIO-77450',      prodOrder:'PROD-4509', cust:'Rio Tinto (Pilbara haul roads)',        ship:iso(addDays(today,2)), suburb:'Karratha Depot',              state:'WA',  zip:'6714', twFrom:'09:00', twTo:'12:00', weight:30000, volume:30.0, comp:'HAZMAT' },
-    { dir:'OUT', loadId:'BIT-000151', custPO:'PO-BHP-60219',      prodOrder:'PROD-4510', cust:'BHP Iron Ore (Mt Whaleback)',           ship:iso(addDays(today,2)), suburb:'Newman Access Rd',            state:'WA',  zip:'6753', twFrom:'10:00', twTo:'14:00', weight:26000, volume:26.0, comp:'Tanker' },
+    { dir:'OUT', loadId:'BIT-000142', custPO:'PO-METRO-88214',   prodOrder:'PROD-4501', cust:'Metro Civil Pty Ltd',      custCode:'METRO',  ship:iso(today),            suburb:'M4 Motorway - Parramatta',        state:'NSW', zip:'2150', twFrom:'09:00', twTo:'12:00', weight:24000, volume:24.0, comp:'Tanker' },
+    { dir:'OUT', loadId:'BIT-000143', custPO:'PO-METRO-55019',   prodOrder:'PROD-4502', cust:'Metro Civil Pty Ltd',      custCode:'METRO',  ship:iso(today),            suburb:'Sydney Metro - Marrickville',     state:'NSW', zip:'2204', twFrom:'08:00', twTo:'11:00', weight:26000, volume:26.0, comp:'HAZMAT' },
+    { dir:'OUT', loadId:'BIT-000144', custPO:'PO-QSPRAY-70441',  prodOrder:'PROD-4503', cust:'QuickSeal Spray',          custCode:'QSPRAY', ship:iso(today),            suburb:'Pacific Hwy Reseal - Wahroonga',  state:'NSW', zip:'2076', twFrom:'13:00', twTo:'17:00', weight:22000, volume:22.0, comp:'Tanker' },
+    { dir:'OUT', loadId:'BIT-000145', custPO:'PO-RRC-31207',     prodOrder:'PROD-4504', cust:'Regional Roads Co',        custCode:'RRC',    ship:iso(today),            suburb:'Bruce Hwy Section 4 - Nambour',   state:'QLD', zip:'4560', twFrom:'10:00', twTo:'14:00', weight:20000, volume:20.0, comp:'Tanker' },
+    { dir:'OUT', loadId:'BIT-000146', custPO:'PO-QSPRAY-45820',  prodOrder:'PROD-4505', cust:'QuickSeal Spray',          custCode:'QSPRAY', ship:iso(today),            suburb:'Great Northern Hwy - Muchea',     state:'WA',  zip:'6501', twFrom:'09:00', twTo:'13:00', weight:28000, volume:28.0, comp:'HAZMAT' },
+    { dir:'OUT', loadId:'BIT-000147', custPO:'PO-RRC-2211',      prodOrder:'PROD-4506', cust:'Regional Roads Co',        custCode:'RRC',    ship:iso(addDays(today,1)), suburb:'Hume Hwy - Goulburn',             state:'NSW', zip:'2580', twFrom:'11:00', twTo:'15:00', weight:24000, volume:24.0, comp:'Tanker' },
+    { dir:'OUT', loadId:'BIT-000148', custPO:'PO-METRO-99312',   prodOrder:'PROD-4507', cust:'Metro Civil Pty Ltd',      custCode:'METRO',  ship:iso(addDays(today,1)), suburb:'Deer Park Estate - Melbourne W',  state:'VIC', zip:'3023', twFrom:'08:00', twTo:'12:00', weight:18000, volume:18.0, comp:'Tanker' },
+    { dir:'OUT', loadId:'BIT-000149', custPO:'PO-QSPRAY-51002',  prodOrder:'PROD-4508', cust:'QuickSeal Spray',          custCode:'QSPRAY', ship:iso(addDays(today,1)), suburb:'Western Fwy Reseal - Ballarat',   state:'VIC', zip:'3350', twFrom:'14:00', twTo:'18:00', weight:22000, volume:22.0, comp:'HAZMAT' },
+    { dir:'OUT', loadId:'BIT-000150', custPO:'PO-RRC-77450',     prodOrder:'PROD-4509', cust:'Regional Roads Co',        custCode:'RRC',    ship:iso(addDays(today,1)), suburb:'Warrego Hwy - Toowoomba',         state:'QLD', zip:'4350', twFrom:'09:00', twTo:'12:00', weight:30000, volume:30.0, comp:'HAZMAT' },
+    { dir:'OUT', loadId:'BIT-000151', custPO:'PO-METRO-60219',   prodOrder:'PROD-4510', cust:'Metro Civil Pty Ltd',      custCode:'METRO',  ship:iso(addDays(today,2)), suburb:'M2 Motorway - North Ryde',        state:'NSW', zip:'2113', twFrom:'10:00', twTo:'14:00', weight:26000, volume:26.0, comp:'Tanker' },
+    { dir:'OUT', loadId:'BIT-000152', custPO:'PO-QSPRAY-60220',  prodOrder:'PROD-4511', cust:'QuickSeal Spray',          custCode:'QSPRAY', ship:iso(addDays(today,2)), suburb:'Hume Hwy Reseal - Yass',          state:'NSW', zip:'2582', twFrom:'07:00', twTo:'11:00', weight:20000, volume:20.0, comp:'Tanker' },
+    { dir:'OUT', loadId:'BIT-000153', custPO:'PO-RRC-60221',     prodOrder:'PROD-4512', cust:'Regional Roads Co',        custCode:'RRC',    ship:iso(addDays(today,2)), suburb:'Princes Hwy - Warrnambool',       state:'VIC', zip:'3280', twFrom:'08:00', twTo:'12:00', weight:24000, volume:24.0, comp:'Tanker' },
     // Inbound: raw / feedstock bitumen ex refineries into Downer plants
     { dir:'IN',  loadId:'INB-000042', custPO:'SC-VIVA-11284',     prodOrder:'REC-2201',  cust:'Viva Energy Australia (Geelong Refinery)',ship:iso(today),         suburb:'Geelong Refinery \u2192 Laverton North Plant', state:'VIC', zip:'3016', twFrom:'06:00', twTo:'10:00', weight:32000, volume:32.0, comp:'HAZMAT' },
     { dir:'IN',  loadId:'INB-000043', custPO:'SC-BP-77012',       prodOrder:'REC-2202',  cust:'BP Kwinana Terminal',                   ship:iso(today),            suburb:'BP Kwinana \u2192 Kwinana Bitumen Depot',       state:'WA',  zip:'6167', twFrom:'07:00', twTo:'11:00', weight:30000, volume:30.0, comp:'HAZMAT' },
@@ -571,12 +572,87 @@ var drivers = [
 ];
 
 var dispatches = [
-    {
-        id:'DISP-2001', date:iso(today), depart:'06:00', vehicle:'BT-01', driver:'DR-01',
-        status:'Allocated', drops:2, weight:26000, volume:26.0, origin:'ROSE-01',
+    // ---- TODAY ----
+    { id:'DISP-2001', date:iso(today), depart:'06:00', vehicle:'BT-01', driver:'DR-01',
+        status:'InTransit', drops:2, weight:26000, volume:26.0, origin:'ROSE-01',
         legs:[
-            { seq:1, loadId:'BIT-000120', cust:'Transport for NSW',            suburb:'M4 Motorway - Parramatta',   arrival:'07:45', twFrom:'07:00', twTo:'10:00', weight:14000, volume:14.0 },
-            { seq:2, loadId:'BIT-000121', cust:'Sydney Motorway Corporation',  suburb:'WestConnex - Rozelle',       arrival:'10:30', twFrom:'10:00', twTo:'13:00', weight:12000, volume:12.0 }
+            { seq:1, loadId:'BIT-000120', cust:'Metro Civil Pty Ltd',   suburb:'M4 Motorway - Parramatta',   arrival:'07:45', twFrom:'07:00', twTo:'10:00', weight:14000, volume:14.0 },
+            { seq:2, loadId:'BIT-000121', cust:'Metro Civil Pty Ltd',   suburb:'Sydney Metro - Marrickville',arrival:'10:30', twFrom:'10:00', twTo:'13:00', weight:12000, volume:12.0 }
+        ]
+    },
+    { id:'DISP-2002', date:iso(today), depart:'05:30', vehicle:'BT-02', driver:'DR-02',
+        status:'Allocated', drops:3, weight:38000, volume:38.0, origin:'ROSE-01',
+        legs:[
+            { seq:1, loadId:'BIT-000122', cust:'QuickSeal Spray',       suburb:'Pacific Hwy Reseal - Berowra',arrival:'07:00', twFrom:'06:30', twTo:'09:30', weight:12000, volume:12.0 },
+            { seq:2, loadId:'BIT-000123', cust:'QuickSeal Spray',       suburb:'Pacific Hwy Reseal - Gosford',arrival:'09:15', twFrom:'09:00', twTo:'12:00', weight:14000, volume:14.0 },
+            { seq:3, loadId:'BIT-000124', cust:'Regional Roads Co',     suburb:'Pacific Hwy - Ourimbah',      arrival:'11:00', twFrom:'11:00', twTo:'14:00', weight:12000, volume:12.0 }
+        ]
+    },
+    { id:'DISP-2003', date:iso(today), depart:'07:00', vehicle:'BT-05', driver:'DR-03',
+        status:'Allocated', drops:2, weight:32000, volume:32.0, origin:'KMBL-01',
+        legs:[
+            { seq:1, loadId:'BIT-000125', cust:'Regional Roads Co',     suburb:'Princes Hwy - Wollongong',    arrival:'08:15', twFrom:'08:00', twTo:'11:00', weight:16000, volume:16.0 },
+            { seq:2, loadId:'BIT-000126', cust:'Regional Roads Co',     suburb:'Illawarra Hwy - Albion Park', arrival:'11:00', twFrom:'11:00', twTo:'14:00', weight:16000, volume:16.0 }
+        ]
+    },
+    { id:'DISP-2004', date:iso(today), depart:'05:00', vehicle:'BT-03', driver:'DR-04',
+        status:'InTransit', drops:3, weight:24000, volume:24.0, origin:'LAVN-01',
+        legs:[
+            { seq:1, loadId:'BIT-000127', cust:'QuickSeal Spray',       suburb:'Western Fwy - Melton',        arrival:'06:15', twFrom:'06:00', twTo:'09:00', weight:8000,  volume:8.0  },
+            { seq:2, loadId:'BIT-000128', cust:'QuickSeal Spray',       suburb:'Calder Fwy - Sunbury',        arrival:'08:00', twFrom:'08:00', twTo:'11:00', weight:8000,  volume:8.0  },
+            { seq:3, loadId:'BIT-000129', cust:'Metro Civil Pty Ltd',   suburb:'Airport West Estate',         arrival:'10:30', twFrom:'10:00', twTo:'13:00', weight:8000,  volume:8.0  }
+        ]
+    },
+    { id:'DISP-2005', date:iso(today), depart:'06:30', vehicle:'BT-06', driver:'DR-07',
+        status:'Delivered', drops:4, weight:10000, volume:10.0, origin:'ROSE-01',
+        legs:[
+            { seq:1, loadId:'BIT-000130', cust:'QuickSeal Spray',       suburb:'Warringah Rd - Frenchs Forest',arrival:'07:15',twFrom:'07:00',twTo:'09:00', weight:2500, volume:2.5 },
+            { seq:2, loadId:'BIT-000131', cust:'QuickSeal Spray',       suburb:'Mona Vale Rd - St Ives',      arrival:'08:15', twFrom:'08:00', twTo:'10:00', weight:2500, volume:2.5 },
+            { seq:3, loadId:'BIT-000132', cust:'QuickSeal Spray',       suburb:'Pittwater Rd - Narrabeen',    arrival:'09:15', twFrom:'09:00', twTo:'11:00', weight:2500, volume:2.5 },
+            { seq:4, loadId:'BIT-000133', cust:'QuickSeal Spray',       suburb:'Barrenjoey Rd - Avalon',      arrival:'10:15', twFrom:'10:00', twTo:'12:00', weight:2500, volume:2.5 }
+        ]
+    },
+    // ---- TODAY + 1 ----
+    { id:'DISP-2006', date:iso(addDays(today,1)), depart:'05:30', vehicle:'BT-08', driver:'DR-05',
+        status:'Planned', drops:2, weight:32000, volume:32.0, origin:'ROSE-01',
+        legs:[
+            { seq:1, loadId:'BIT-000147', cust:'Regional Roads Co',     suburb:'Hume Hwy - Goulburn',         arrival:'07:30', twFrom:'11:00', twTo:'15:00', weight:16000, volume:16.0 },
+            { seq:2, loadId:'BIT-000150', cust:'Regional Roads Co',     suburb:'Warrego Hwy - Toowoomba',     arrival:'09:15', twFrom:'09:00', twTo:'12:00', weight:16000, volume:16.0 }
+        ]
+    },
+    { id:'DISP-2007', date:iso(addDays(today,1)), depart:'06:00', vehicle:'BT-04', driver:'DR-06',
+        status:'Planned', drops:2, weight:18000, volume:18.0, origin:'LAVN-01',
+        legs:[
+            { seq:1, loadId:'BIT-000148', cust:'Metro Civil Pty Ltd',   suburb:'Deer Park Estate - Melbourne W',arrival:'08:00', twFrom:'08:00', twTo:'12:00', weight:10000, volume:10.0 },
+            { seq:2, loadId:'BIT-000149', cust:'QuickSeal Spray',       suburb:'Western Fwy Reseal - Ballarat',arrival:'10:15', twFrom:'14:00', twTo:'18:00', weight:8000,  volume:8.0  }
+        ]
+    },
+    { id:'DISP-2008', date:iso(addDays(today,1)), depart:'07:30', vehicle:'BT-02', driver:'DR-02',
+        status:'Planned', drops:2, weight:28000, volume:28.0, origin:'WACL-01',
+        legs:[
+            { seq:1, loadId:'BIT-000145', cust:'Regional Roads Co',     suburb:'Bruce Hwy Section 4 - Nambour',arrival:'09:30', twFrom:'10:00', twTo:'14:00', weight:14000, volume:14.0 },
+            { seq:2, loadId:'BIT-000160', cust:'Regional Roads Co',     suburb:'Bruce Hwy - Gympie',          arrival:'11:45', twFrom:'11:30', twTo:'14:30', weight:14000, volume:14.0 }
+        ]
+    },
+    // ---- TODAY + 2 ----
+    { id:'DISP-2009', date:iso(addDays(today,2)), depart:'05:00', vehicle:'BT-01', driver:'DR-01',
+        status:'Planned', drops:2, weight:26000, volume:26.0, origin:'ROSE-01',
+        legs:[
+            { seq:1, loadId:'BIT-000151', cust:'Metro Civil Pty Ltd',   suburb:'M2 Motorway - North Ryde',    arrival:'06:45', twFrom:'10:00', twTo:'14:00', weight:14000, volume:14.0 },
+            { seq:2, loadId:'BIT-000152', cust:'QuickSeal Spray',       suburb:'Hume Hwy Reseal - Yass',      arrival:'09:15', twFrom:'07:00', twTo:'11:00', weight:12000, volume:12.0 }
+        ]
+    },
+    { id:'DISP-2010', date:iso(addDays(today,2)), depart:'06:30', vehicle:'BT-03', driver:'DR-04',
+        status:'Planned', drops:1, weight:24000, volume:24.0, origin:'LAVN-01',
+        legs:[
+            { seq:1, loadId:'BIT-000153', cust:'Regional Roads Co',     suburb:'Princes Hwy - Warrnambool',   arrival:'09:30', twFrom:'08:00', twTo:'12:00', weight:24000, volume:24.0 }
+        ]
+    },
+    { id:'DISP-2011', date:iso(addDays(today,2)), depart:'08:00', vehicle:'BT-05', driver:'DR-03',
+        status:'Planned', drops:2, weight:32000, volume:32.0, origin:'KMBL-01',
+        legs:[
+            { seq:1, loadId:'BIT-000161', cust:'Metro Civil Pty Ltd',   suburb:'M1 Pacific - Wyong',          arrival:'09:45', twFrom:'09:30', twTo:'12:30', weight:16000, volume:16.0 },
+            { seq:2, loadId:'BIT-000162', cust:'Metro Civil Pty Ltd',   suburb:'M1 Pacific - Ourimbah',       arrival:'11:30', twFrom:'11:00', twTo:'14:00', weight:16000, volume:16.0 }
         ]
     }
 ];
@@ -717,6 +793,11 @@ function renderPending() {
     var selCount = rows.filter(function(o){ return o.selected; }).length;
     document.getElementById('pendingCount').textContent = rows.length;
     document.getElementById('pendingSummary').textContent = rows.length + ' loads \u00b7 ' + selCount + ' selected';
+    var createBtn = document.getElementById('btnCreateDispatch');
+    if (createBtn) {
+        createBtn.style.display = (selCount > 0 && loadDirection === 'OUT') ? 'inline-flex' : 'none';
+        document.getElementById('btnCreateDispatchCount').textContent = selCount > 0 ? '(' + selCount + ')' : '';
+    }
 }
 
 function renderDispatches() {
@@ -1130,7 +1211,10 @@ document.querySelectorAll('.tab').forEach(function(t){
     t.addEventListener('click', function(){ switchTab(t.dataset.tab); });
 });
 
-document.getElementById('btnOptimize').addEventListener('click', optimizeAndAllocate);
+document.getElementById('btnCreateDispatch').addEventListener('click', function(e){
+    e.stopPropagation();
+    optimizeAndAllocate();
+});
 
 ['btnOutbound','btnInbound'].forEach(function(id){
     document.getElementById(id).addEventListener('click', function(e){
