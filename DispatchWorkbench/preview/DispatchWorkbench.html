@@ -236,11 +236,9 @@
     <input class="ap-date" type="date" id="dateTo" />
     <span class="ap-label">Origin</span>
     <select class="ap-select" id="origin">
-        <option value="ROSE-01">ROSE-01 &middot; Rosehill Asphalt Plant (NSW)</option>
-        <option value="KMBL-01">KMBL-01 &middot; Kembla Grange Terminal (NSW)</option>
-        <option value="LAVN-01">LAVN-01 &middot; Laverton North Plant (VIC)</option>
-        <option value="WACL-01">WACL-01 &middot; Wacol Bitumen Terminal (QLD)</option>
-        <option value="KWIN-01">KWIN-01 &middot; Kwinana Bitumen Depot (WA)</option>
+        <option value="ROSE">ROSE &middot; Rosehill Asphalt Plant</option>
+        <option value="TERM">TERM &middot; Bitumen Terminal &amp; Blend Plant</option>
+        <option value="DEPO">DEPO &middot; Transport Depot</option>
     </select>
 </div>
 
@@ -550,14 +548,14 @@ var pendingOrders = [
 ].map(function(o){ o.selected = false; return o; });
 
 var vehicles = [
-    { id:'BT-01', desc:'Kenworth T610 + Heated Bitumen Tri-axle Tanker (28kL)',    type:'Tanker',      maxW:28000, maxV:28.0, maxD:2, comp:'Tanker', home:'ROSE-01', avail:true  },
-    { id:'BT-02', desc:'Volvo FH16 + Insulated Bitumen B-Double (42kL)',          type:'Articulated', maxW:42000, maxV:42.0, maxD:3, comp:'HAZMAT', home:'ROSE-01', avail:true  },
-    { id:'BT-03', desc:'Mack Trident + Heated Bitumen Semi-trailer (30kL)',       type:'Tanker',      maxW:30000, maxV:30.0, maxD:2, comp:'HAZMAT', home:'LAVN-01', avail:true  },
-    { id:'BT-04', desc:'Isuzu Giga CYH + Insulated Bitumen Rigid Tanker (14kL)',  type:'Tanker',      maxW:14000, maxV:14.0, maxD:3, comp:'Tanker', home:'WACL-01', avail:true  },
-    { id:'BT-05', desc:'Scania R620 + Heated Bitumen B-Double (44kL)',            type:'Articulated', maxW:44000, maxV:44.0, maxD:3, comp:'HAZMAT', home:'KMBL-01', avail:true  },
-    { id:'BT-06', desc:'Freightliner Argosy + Emulsion Sprayer Truck (10kL)',     type:'Tanker',      maxW:10000, maxV:10.0, maxD:4, comp:'Tanker', home:'KWIN-01', avail:true  },
-    { id:'BT-07', desc:'Hino 700 + Cutback Bitumen Rigid Tanker (12kL)',          type:'Tanker',      maxW:12000, maxV:12.0, maxD:3, comp:'HAZMAT', home:'WACL-01', avail:false },
-    { id:'BT-08', desc:'Western Star 4800 + PMB Heated Tanker (32kL)',            type:'Tanker',      maxW:32000, maxV:32.0, maxD:2, comp:'HAZMAT', home:'LAVN-01', avail:true  }
+    { id:'BT-01', desc:'Kenworth T610 + Heated Bitumen Tri-axle Tanker (28kL)',    type:'Tanker',      maxW:28000, maxV:28.0, maxD:2, comp:'Tanker', home:'ROSE', avail:true  },
+    { id:'BT-02', desc:'Volvo FH16 + Insulated Bitumen B-Double (42kL)',          type:'Articulated', maxW:42000, maxV:42.0, maxD:3, comp:'HAZMAT', home:'ROSE', avail:true  },
+    { id:'BT-03', desc:'Mack Trident + Heated Bitumen Semi-trailer (30kL)',       type:'Tanker',      maxW:30000, maxV:30.0, maxD:2, comp:'HAZMAT', home:'TERM', avail:true  },
+    { id:'BT-04', desc:'Isuzu Giga CYH + Insulated Bitumen Rigid Tanker (14kL)',  type:'Tanker',      maxW:14000, maxV:14.0, maxD:3, comp:'Tanker', home:'TERM', avail:true  },
+    { id:'BT-05', desc:'Scania R620 + Heated Bitumen B-Double (44kL)',            type:'Articulated', maxW:44000, maxV:44.0, maxD:3, comp:'HAZMAT', home:'TERM', avail:true  },
+    { id:'BT-06', desc:'Freightliner Argosy + Emulsion Sprayer Truck (10kL)',     type:'Tanker',      maxW:10000, maxV:10.0, maxD:4, comp:'Tanker', home:'DEPO', avail:true  },
+    { id:'BT-07', desc:'Hino 700 + Cutback Bitumen Rigid Tanker (12kL)',          type:'Tanker',      maxW:12000, maxV:12.0, maxD:3, comp:'HAZMAT', home:'TERM', avail:false },
+    { id:'BT-08', desc:'Western Star 4800 + PMB Heated Tanker (32kL)',            type:'Tanker',      maxW:32000, maxV:32.0, maxD:2, comp:'HAZMAT', home:'TERM', avail:true  }
 ];
 
 var drivers = [
@@ -574,14 +572,14 @@ var drivers = [
 var dispatches = [
     // ---- TODAY ----
     { id:'DISP-2001', date:iso(today), depart:'06:00', vehicle:'BT-01', driver:'DR-01',
-        status:'InTransit', drops:2, weight:26000, volume:26.0, origin:'ROSE-01',
+        status:'InTransit', drops:2, weight:26000, volume:26.0, origin:'ROSE',
         legs:[
             { seq:1, loadId:'BIT-000120', cust:'Metro Civil Pty Ltd',   suburb:'M4 Motorway - Parramatta',   arrival:'07:45', twFrom:'07:00', twTo:'10:00', weight:14000, volume:14.0 },
             { seq:2, loadId:'BIT-000121', cust:'Metro Civil Pty Ltd',   suburb:'Sydney Metro - Marrickville',arrival:'10:30', twFrom:'10:00', twTo:'13:00', weight:12000, volume:12.0 }
         ]
     },
     { id:'DISP-2002', date:iso(today), depart:'05:30', vehicle:'BT-02', driver:'DR-02',
-        status:'Allocated', drops:3, weight:38000, volume:38.0, origin:'ROSE-01',
+        status:'Allocated', drops:3, weight:38000, volume:38.0, origin:'ROSE',
         legs:[
             { seq:1, loadId:'BIT-000122', cust:'QuickSeal Spray',       suburb:'Pacific Hwy Reseal - Berowra',arrival:'07:00', twFrom:'06:30', twTo:'09:30', weight:12000, volume:12.0 },
             { seq:2, loadId:'BIT-000123', cust:'QuickSeal Spray',       suburb:'Pacific Hwy Reseal - Gosford',arrival:'09:15', twFrom:'09:00', twTo:'12:00', weight:14000, volume:14.0 },
@@ -589,14 +587,14 @@ var dispatches = [
         ]
     },
     { id:'DISP-2003', date:iso(today), depart:'07:00', vehicle:'BT-05', driver:'DR-03',
-        status:'Allocated', drops:2, weight:32000, volume:32.0, origin:'KMBL-01',
+        status:'Allocated', drops:2, weight:32000, volume:32.0, origin:'TERM',
         legs:[
             { seq:1, loadId:'BIT-000125', cust:'Regional Roads Co',     suburb:'Princes Hwy - Wollongong',    arrival:'08:15', twFrom:'08:00', twTo:'11:00', weight:16000, volume:16.0 },
             { seq:2, loadId:'BIT-000126', cust:'Regional Roads Co',     suburb:'Illawarra Hwy - Albion Park', arrival:'11:00', twFrom:'11:00', twTo:'14:00', weight:16000, volume:16.0 }
         ]
     },
     { id:'DISP-2004', date:iso(today), depart:'05:00', vehicle:'BT-03', driver:'DR-04',
-        status:'InTransit', drops:3, weight:24000, volume:24.0, origin:'LAVN-01',
+        status:'InTransit', drops:3, weight:24000, volume:24.0, origin:'TERM',
         legs:[
             { seq:1, loadId:'BIT-000127', cust:'QuickSeal Spray',       suburb:'Western Fwy - Melton',        arrival:'06:15', twFrom:'06:00', twTo:'09:00', weight:8000,  volume:8.0  },
             { seq:2, loadId:'BIT-000128', cust:'QuickSeal Spray',       suburb:'Calder Fwy - Sunbury',        arrival:'08:00', twFrom:'08:00', twTo:'11:00', weight:8000,  volume:8.0  },
@@ -604,7 +602,7 @@ var dispatches = [
         ]
     },
     { id:'DISP-2005', date:iso(today), depart:'06:30', vehicle:'BT-06', driver:'DR-07',
-        status:'Delivered', drops:4, weight:10000, volume:10.0, origin:'ROSE-01',
+        status:'Delivered', drops:4, weight:10000, volume:10.0, origin:'DEPO',
         legs:[
             { seq:1, loadId:'BIT-000130', cust:'QuickSeal Spray',       suburb:'Warringah Rd - Frenchs Forest',arrival:'07:15',twFrom:'07:00',twTo:'09:00', weight:2500, volume:2.5 },
             { seq:2, loadId:'BIT-000131', cust:'QuickSeal Spray',       suburb:'Mona Vale Rd - St Ives',      arrival:'08:15', twFrom:'08:00', twTo:'10:00', weight:2500, volume:2.5 },
@@ -614,21 +612,21 @@ var dispatches = [
     },
     // ---- TODAY + 1 ----
     { id:'DISP-2006', date:iso(addDays(today,1)), depart:'05:30', vehicle:'BT-08', driver:'DR-05',
-        status:'Planned', drops:2, weight:32000, volume:32.0, origin:'ROSE-01',
+        status:'Planned', drops:2, weight:32000, volume:32.0, origin:'ROSE',
         legs:[
             { seq:1, loadId:'BIT-000147', cust:'Regional Roads Co',     suburb:'Hume Hwy - Goulburn',         arrival:'07:30', twFrom:'11:00', twTo:'15:00', weight:16000, volume:16.0 },
             { seq:2, loadId:'BIT-000150', cust:'Regional Roads Co',     suburb:'Warrego Hwy - Toowoomba',     arrival:'09:15', twFrom:'09:00', twTo:'12:00', weight:16000, volume:16.0 }
         ]
     },
     { id:'DISP-2007', date:iso(addDays(today,1)), depart:'06:00', vehicle:'BT-04', driver:'DR-06',
-        status:'Planned', drops:2, weight:18000, volume:18.0, origin:'LAVN-01',
+        status:'Planned', drops:2, weight:18000, volume:18.0, origin:'TERM',
         legs:[
             { seq:1, loadId:'BIT-000148', cust:'Metro Civil Pty Ltd',   suburb:'Deer Park Estate - Melbourne W',arrival:'08:00', twFrom:'08:00', twTo:'12:00', weight:10000, volume:10.0 },
             { seq:2, loadId:'BIT-000149', cust:'QuickSeal Spray',       suburb:'Western Fwy Reseal - Ballarat',arrival:'10:15', twFrom:'14:00', twTo:'18:00', weight:8000,  volume:8.0  }
         ]
     },
     { id:'DISP-2008', date:iso(addDays(today,1)), depart:'07:30', vehicle:'BT-02', driver:'DR-02',
-        status:'Planned', drops:2, weight:28000, volume:28.0, origin:'WACL-01',
+        status:'Planned', drops:2, weight:28000, volume:28.0, origin:'TERM',
         legs:[
             { seq:1, loadId:'BIT-000145', cust:'Regional Roads Co',     suburb:'Bruce Hwy Section 4 - Nambour',arrival:'09:30', twFrom:'10:00', twTo:'14:00', weight:14000, volume:14.0 },
             { seq:2, loadId:'BIT-000160', cust:'Regional Roads Co',     suburb:'Bruce Hwy - Gympie',          arrival:'11:45', twFrom:'11:30', twTo:'14:30', weight:14000, volume:14.0 }
@@ -636,20 +634,20 @@ var dispatches = [
     },
     // ---- TODAY + 2 ----
     { id:'DISP-2009', date:iso(addDays(today,2)), depart:'05:00', vehicle:'BT-01', driver:'DR-01',
-        status:'Planned', drops:2, weight:26000, volume:26.0, origin:'ROSE-01',
+        status:'Planned', drops:2, weight:26000, volume:26.0, origin:'ROSE',
         legs:[
             { seq:1, loadId:'BIT-000151', cust:'Metro Civil Pty Ltd',   suburb:'M2 Motorway - North Ryde',    arrival:'06:45', twFrom:'10:00', twTo:'14:00', weight:14000, volume:14.0 },
             { seq:2, loadId:'BIT-000152', cust:'QuickSeal Spray',       suburb:'Hume Hwy Reseal - Yass',      arrival:'09:15', twFrom:'07:00', twTo:'11:00', weight:12000, volume:12.0 }
         ]
     },
     { id:'DISP-2010', date:iso(addDays(today,2)), depart:'06:30', vehicle:'BT-03', driver:'DR-04',
-        status:'Planned', drops:1, weight:24000, volume:24.0, origin:'LAVN-01',
+        status:'Planned', drops:1, weight:24000, volume:24.0, origin:'TERM',
         legs:[
             { seq:1, loadId:'BIT-000153', cust:'Regional Roads Co',     suburb:'Princes Hwy - Warrnambool',   arrival:'09:30', twFrom:'08:00', twTo:'12:00', weight:24000, volume:24.0 }
         ]
     },
     { id:'DISP-2011', date:iso(addDays(today,2)), depart:'08:00', vehicle:'BT-05', driver:'DR-03',
-        status:'Planned', drops:2, weight:32000, volume:32.0, origin:'KMBL-01',
+        status:'Planned', drops:2, weight:32000, volume:32.0, origin:'TERM',
         legs:[
             { seq:1, loadId:'BIT-000161', cust:'Metro Civil Pty Ltd',   suburb:'M1 Pacific - Wyong',          arrival:'09:45', twFrom:'09:30', twTo:'12:30', weight:16000, volume:16.0 },
             { seq:2, loadId:'BIT-000162', cust:'Metro Civil Pty Ltd',   suburb:'M1 Pacific - Ourimbah',       arrival:'11:30', twFrom:'11:00', twTo:'14:00', weight:16000, volume:16.0 }
@@ -665,14 +663,14 @@ var loadDirection = 'OUT';
 
 /* ========== Fleet & Vehicle Register data ========== */
 var primeMovers = [
-    { id:'PM-01', make:'Kenworth T610',        rego:'DWR-140',  ownership:'Owned',         subcontractor:'',                          home:'ROSE-01', comp:'Tanker', odo:412300, nextService:iso(addDays(today,12)),  regoExpiry:iso(addDays(today, 96)), avail:true  },
-    { id:'PM-02', make:'Volvo FH16 700',       rego:'DWR-208',  ownership:'Owned',         subcontractor:'',                          home:'ROSE-01', comp:'HAZMAT', odo:298100, nextService:iso(addDays(today, -3)), regoExpiry:iso(addDays(today,152)), avail:true  },
-    { id:'PM-03', make:'Mack Trident',         rego:'MKT-994',  ownership:'Subcontractor', subcontractor:'K&S Freighters',            home:'LAVN-01', comp:'HAZMAT', odo:512000, nextService:iso(addDays(today, 34)), regoExpiry:iso(addDays(today, 62)), avail:true  },
-    { id:'PM-04', make:'Isuzu Giga CYH',       rego:'IGA-311',  ownership:'Owned',         subcontractor:'',                          home:'WACL-01', comp:'Tanker', odo:187600, nextService:iso(addDays(today, 45)), regoExpiry:iso(addDays(today,210)), avail:true  },
-    { id:'PM-05', make:'Scania R620',          rego:'SCN-455',  ownership:'Subcontractor', subcontractor:'Followmont Transport',      home:'KMBL-01', comp:'HAZMAT', odo:604700, nextService:iso(addDays(today,  8)), regoExpiry:iso(addDays(today,-14)), avail:false },
-    { id:'PM-06', make:'Freightliner Argosy',  rego:'FLA-780',  ownership:'Owned',         subcontractor:'',                          home:'KWIN-01', comp:'Tanker', odo:355400, nextService:iso(addDays(today, 61)), regoExpiry:iso(addDays(today, 27)), avail:true  },
-    { id:'PM-07', make:'Hino 700',             rego:'HNO-102',  ownership:'Subcontractor', subcontractor:'Lindsay Australia',         home:'WACL-01', comp:'HAZMAT', odo:229500, nextService:iso(addDays(today, 20)), regoExpiry:iso(addDays(today,180)), avail:true  },
-    { id:'PM-08', make:'Western Star 4800',    rego:'WST-661',  ownership:'Owned',         subcontractor:'',                          home:'LAVN-01', comp:'HAZMAT', odo:98200,  nextService:iso(addDays(today, 55)), regoExpiry:iso(addDays(today,300)), avail:true  }
+    { id:'PM-01', make:'Kenworth T610',        rego:'DWR-140',  ownership:'Owned',         subcontractor:'',                          home:'ROSE', comp:'Tanker', odo:412300, nextService:iso(addDays(today,12)),  regoExpiry:iso(addDays(today, 96)), avail:true  },
+    { id:'PM-02', make:'Volvo FH16 700',       rego:'DWR-208',  ownership:'Owned',         subcontractor:'',                          home:'ROSE', comp:'HAZMAT', odo:298100, nextService:iso(addDays(today, -3)), regoExpiry:iso(addDays(today,152)), avail:true  },
+    { id:'PM-03', make:'Mack Trident',         rego:'MKT-994',  ownership:'Subcontractor', subcontractor:'K&S Freighters',            home:'TERM', comp:'HAZMAT', odo:512000, nextService:iso(addDays(today, 34)), regoExpiry:iso(addDays(today, 62)), avail:true  },
+    { id:'PM-04', make:'Isuzu Giga CYH',       rego:'IGA-311',  ownership:'Owned',         subcontractor:'',                          home:'TERM', comp:'Tanker', odo:187600, nextService:iso(addDays(today, 45)), regoExpiry:iso(addDays(today,210)), avail:true  },
+    { id:'PM-05', make:'Scania R620',          rego:'SCN-455',  ownership:'Subcontractor', subcontractor:'Followmont Transport',      home:'TERM', comp:'HAZMAT', odo:604700, nextService:iso(addDays(today,  8)), regoExpiry:iso(addDays(today,-14)), avail:false },
+    { id:'PM-06', make:'Freightliner Argosy',  rego:'FLA-780',  ownership:'Owned',         subcontractor:'',                          home:'DEPO', comp:'Tanker', odo:355400, nextService:iso(addDays(today, 61)), regoExpiry:iso(addDays(today, 27)), avail:true  },
+    { id:'PM-07', make:'Hino 700',             rego:'HNO-102',  ownership:'Subcontractor', subcontractor:'Lindsay Australia',         home:'TERM', comp:'HAZMAT', odo:229500, nextService:iso(addDays(today, 20)), regoExpiry:iso(addDays(today,180)), avail:true  },
+    { id:'PM-08', make:'Western Star 4800',    rego:'WST-661',  ownership:'Owned',         subcontractor:'',                          home:'TERM', comp:'HAZMAT', odo:98200,  nextService:iso(addDays(today, 55)), regoExpiry:iso(addDays(today,300)), avail:true  }
 ];
 
 var trailers = [
@@ -1251,7 +1249,7 @@ document.getElementById('chkAll').addEventListener('change', function(e){
 document.getElementById('btnAddVehicle').addEventListener('click', function(){
     var id = prompt('New vehicle ID?', 'BT-' + String(vehicles.length+1).padStart(2,'0'));
     if (!id) return;
-    vehicles.push({ id:id, desc:'New bitumen tanker', type:'Tanker', maxW:20000, maxV:20.0, maxD:2, comp:'Tanker', home:'ROSE-01', avail:true });
+    vehicles.push({ id:id, desc:'New bitumen tanker', type:'Tanker', maxW:20000, maxV:20.0, maxD:2, comp:'Tanker', home:'ROSE', avail:true });
     renderFleet(); renderKpis(); toast('Vehicle ' + id + ' created.', 'success');
 });
 document.getElementById('btnAddDriver').addEventListener('click', function(){
