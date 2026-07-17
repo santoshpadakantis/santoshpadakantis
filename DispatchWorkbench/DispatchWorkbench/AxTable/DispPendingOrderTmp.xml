@@ -1,0 +1,70 @@
+<?xml version="1.0" encoding="utf-8"?>
+<AxTable xmlns:i="http://www.w3.org/2001/XMLSchema-instance">
+	<Name>DispPendingOrderTmp</Name>
+	<SourceCode>
+		<Methods>
+			<Method>
+				<Name>classDeclaration</Name>
+				<Source><![CDATA[
+public class DispPendingOrderTmp extends common
+{
+}
+]]></Source>
+			</Method>
+		</Methods>
+	</SourceCode>
+	<Label>@DispatchWB:PendingOrder</Label>
+	<TableType>TempDB</TableType>
+	<Fields>
+		<AxTableField xmlns:i="http://www.w3.org/2001/XMLSchema-instance" i:type="AxTableFieldString">
+			<Name>SalesId</Name>
+			<ExtendedDataType>SalesIdBase</ExtendedDataType>
+		</AxTableField>
+		<AxTableField xmlns:i="http://www.w3.org/2001/XMLSchema-instance" i:type="AxTableFieldString">
+			<Name>CustAccount</Name>
+			<ExtendedDataType>CustAccount</ExtendedDataType>
+		</AxTableField>
+		<AxTableField xmlns:i="http://www.w3.org/2001/XMLSchema-instance" i:type="AxTableFieldString">
+			<Name>CustName</Name>
+			<ExtendedDataType>CustName</ExtendedDataType>
+		</AxTableField>
+		<AxTableField xmlns:i="http://www.w3.org/2001/XMLSchema-instance" i:type="AxTableFieldDate">
+			<Name>RequestedShipDate</Name>
+			<Label>@DispatchWB:RequestedShipDate</Label>
+		</AxTableField>
+		<AxTableField xmlns:i="http://www.w3.org/2001/XMLSchema-instance" i:type="AxTableFieldString">
+			<Name>DeliveryPostCode</Name>
+			<ExtendedDataType>AddressZipCodeId</ExtendedDataType>
+		</AxTableField>
+		<AxTableField xmlns:i="http://www.w3.org/2001/XMLSchema-instance" i:type="AxTableFieldString">
+			<Name>DeliveryCity</Name>
+			<ExtendedDataType>AddressCity</ExtendedDataType>
+		</AxTableField>
+		<AxTableField xmlns:i="http://www.w3.org/2001/XMLSchema-instance" i:type="AxTableFieldReal">
+			<Name>Latitude</Name>
+		</AxTableField>
+		<AxTableField xmlns:i="http://www.w3.org/2001/XMLSchema-instance" i:type="AxTableFieldReal">
+			<Name>Longitude</Name>
+		</AxTableField>
+		<AxTableField xmlns:i="http://www.w3.org/2001/XMLSchema-instance" i:type="AxTableFieldTime">
+			<Name>TimeWindowFrom</Name>
+		</AxTableField>
+		<AxTableField xmlns:i="http://www.w3.org/2001/XMLSchema-instance" i:type="AxTableFieldTime">
+			<Name>TimeWindowTo</Name>
+		</AxTableField>
+		<AxTableField xmlns:i="http://www.w3.org/2001/XMLSchema-instance" i:type="AxTableFieldReal">
+			<Name>WeightKg</Name>
+		</AxTableField>
+		<AxTableField xmlns:i="http://www.w3.org/2001/XMLSchema-instance" i:type="AxTableFieldReal">
+			<Name>VolumeM3</Name>
+		</AxTableField>
+		<AxTableField xmlns:i="http://www.w3.org/2001/XMLSchema-instance" i:type="AxTableFieldEnum">
+			<Name>RequiredCompetency</Name>
+			<EnumType>DispDriverCompetency</EnumType>
+		</AxTableField>
+		<AxTableField xmlns:i="http://www.w3.org/2001/XMLSchema-instance" i:type="AxTableFieldEnum">
+			<Name>Selected</Name>
+			<EnumType>NoYes</EnumType>
+		</AxTableField>
+	</Fields>
+</AxTable>

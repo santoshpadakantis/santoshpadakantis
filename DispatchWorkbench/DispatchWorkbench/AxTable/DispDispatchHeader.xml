@@ -1,0 +1,129 @@
+<?xml version="1.0" encoding="utf-8"?>
+<AxTable xmlns:i="http://www.w3.org/2001/XMLSchema-instance">
+	<Name>DispDispatchHeader</Name>
+	<SourceCode>
+		<Methods>
+			<Method>
+				<Name>classDeclaration</Name>
+				<Source><![CDATA[
+public class DispDispatchHeader extends common
+{
+}
+]]></Source>
+			</Method>
+			<Method>
+				<Name>find</Name>
+				<Source><![CDATA[
+public static DispDispatchHeader find(DispDispatchId _dispatchId, boolean _forUpdate = false)
+{
+    DispDispatchHeader header;
+    header.selectForUpdate(_forUpdate);
+    select firstonly header
+        where header.DispatchId == _dispatchId;
+    return header;
+}
+]]></Source>
+			</Method>
+		</Methods>
+	</SourceCode>
+	<Label>@DispatchWB:DispatchHeader</Label>
+	<TitleField1>DispatchId</TitleField1>
+	<TitleField2>DispatchDate</TitleField2>
+	<ClusteredIndex>DispatchIdx</ClusteredIndex>
+	<PrimaryIndex>DispatchIdx</PrimaryIndex>
+	<Fields>
+		<AxTableField xmlns:i="http://www.w3.org/2001/XMLSchema-instance" i:type="AxTableFieldString">
+			<Name>DispatchId</Name>
+			<ExtendedDataType>DispDispatchId</ExtendedDataType>
+			<Mandatory>Yes</Mandatory>
+		</AxTableField>
+		<AxTableField xmlns:i="http://www.w3.org/2001/XMLSchema-instance" i:type="AxTableFieldDate">
+			<Name>DispatchDate</Name>
+			<Label>@DispatchWB:DispatchDate</Label>
+		</AxTableField>
+		<AxTableField xmlns:i="http://www.w3.org/2001/XMLSchema-instance" i:type="AxTableFieldTime">
+			<Name>PlannedDeparture</Name>
+			<Label>@DispatchWB:PlannedDeparture</Label>
+		</AxTableField>
+		<AxTableField xmlns:i="http://www.w3.org/2001/XMLSchema-instance" i:type="AxTableFieldTime">
+			<Name>PlannedReturn</Name>
+			<Label>@DispatchWB:PlannedReturn</Label>
+		</AxTableField>
+		<AxTableField xmlns:i="http://www.w3.org/2001/XMLSchema-instance" i:type="AxTableFieldString">
+			<Name>VehicleId</Name>
+			<ExtendedDataType>DispVehicleId</ExtendedDataType>
+		</AxTableField>
+		<AxTableField xmlns:i="http://www.w3.org/2001/XMLSchema-instance" i:type="AxTableFieldString">
+			<Name>DriverId</Name>
+			<ExtendedDataType>DispDriverId</ExtendedDataType>
+		</AxTableField>
+		<AxTableField xmlns:i="http://www.w3.org/2001/XMLSchema-instance" i:type="AxTableFieldEnum">
+			<Name>DispatchStatus</Name>
+			<EnumType>DispDispatchStatus</EnumType>
+		</AxTableField>
+		<AxTableField xmlns:i="http://www.w3.org/2001/XMLSchema-instance" i:type="AxTableFieldReal">
+			<Name>TotalWeightKg</Name>
+			<Label>@DispatchWB:TotalWeightKg</Label>
+		</AxTableField>
+		<AxTableField xmlns:i="http://www.w3.org/2001/XMLSchema-instance" i:type="AxTableFieldReal">
+			<Name>TotalVolumeM3</Name>
+			<Label>@DispatchWB:TotalVolumeM3</Label>
+		</AxTableField>
+		<AxTableField xmlns:i="http://www.w3.org/2001/XMLSchema-instance" i:type="AxTableFieldInt">
+			<Name>DropCount</Name>
+			<Label>@DispatchWB:DropCount</Label>
+		</AxTableField>
+		<AxTableField xmlns:i="http://www.w3.org/2001/XMLSchema-instance" i:type="AxTableFieldString">
+			<Name>OriginLocation</Name>
+			<ExtendedDataType>InventLocationId</ExtendedDataType>
+		</AxTableField>
+	</Fields>
+	<Indexes>
+		<AxTableIndex>
+			<Name>DispatchIdx</Name>
+			<AllowDuplicates>No</AllowDuplicates>
+			<Fields>
+				<AxTableIndexField>
+					<DataField>DispatchId</DataField>
+				</AxTableIndexField>
+			</Fields>
+		</AxTableIndex>
+		<AxTableIndex>
+			<Name>DateIdx</Name>
+			<Fields>
+				<AxTableIndexField>
+					<DataField>DispatchDate</DataField>
+				</AxTableIndexField>
+				<AxTableIndexField>
+					<DataField>DispatchStatus</DataField>
+				</AxTableIndexField>
+			</Fields>
+		</AxTableIndex>
+	</Indexes>
+	<Relations>
+		<AxTableRelation xmlns:i="http://www.w3.org/2001/XMLSchema-instance" i:type="AxTableRelationForeignKey">
+			<Name>DispVehicleTable</Name>
+			<RelatedTable>DispVehicleTable</RelatedTable>
+			<RelatedTableCardinality>ZeroOne</RelatedTableCardinality>
+			<Constraints>
+				<AxTableRelationConstraint xmlns:i="http://www.w3.org/2001/XMLSchema-instance" i:type="AxTableRelationConstraintField">
+					<Name>VehicleId</Name>
+					<Field>VehicleId</Field>
+					<RelatedField>VehicleId</RelatedField>
+				</AxTableRelationConstraint>
+			</Constraints>
+		</AxTableRelation>
+		<AxTableRelation xmlns:i="http://www.w3.org/2001/XMLSchema-instance" i:type="AxTableRelationForeignKey">
+			<Name>DispDriverTable</Name>
+			<RelatedTable>DispDriverTable</RelatedTable>
+			<RelatedTableCardinality>ZeroOne</RelatedTableCardinality>
+			<Constraints>
+				<AxTableRelationConstraint xmlns:i="http://www.w3.org/2001/XMLSchema-instance" i:type="AxTableRelationConstraintField">
+					<Name>DriverId</Name>
+					<Field>DriverId</Field>
+					<RelatedField>DriverId</RelatedField>
+				</AxTableRelationConstraint>
+			</Constraints>
+		</AxTableRelation>
+	</Relations>
+</AxTable>

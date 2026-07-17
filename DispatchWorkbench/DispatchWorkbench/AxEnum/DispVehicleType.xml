@@ -1,0 +1,32 @@
+<?xml version="1.0" encoding="utf-8"?>
+<AxEnum xmlns:i="http://www.w3.org/2001/XMLSchema-instance">
+	<Name>DispVehicleType</Name>
+	<Label>@DispatchWB:VehicleType</Label>
+	<UseEnumValue>No</UseEnumValue>
+	<EnumValues>
+		<AxEnumValue>
+			<Name>Van</Name>
+			<Label>@DispatchWB:Van</Label>
+		</AxEnumValue>
+		<AxEnumValue>
+			<Name>Rigid</Name>
+			<Label>@DispatchWB:Rigid</Label>
+			<Value>1</Value>
+		</AxEnumValue>
+		<AxEnumValue>
+			<Name>Articulated</Name>
+			<Label>@DispatchWB:Articulated</Label>
+			<Value>2</Value>
+		</AxEnumValue>
+		<AxEnumValue>
+			<Name>Refrigerated</Name>
+			<Label>@DispatchWB:Refrigerated</Label>
+			<Value>3</Value>
+		</AxEnumValue>
+		<AxEnumValue>
+			<Name>Tanker</Name>
+			<Label>@DispatchWB:Tanker</Label>
+			<Value>4</Value>
+		</AxEnumValue>
+	</EnumValues>
+</AxEnum>

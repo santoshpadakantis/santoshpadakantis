@@ -1,0 +1,117 @@
+<?xml version="1.0" encoding="utf-8"?>
+<AxTable xmlns:i="http://www.w3.org/2001/XMLSchema-instance">
+	<Name>DispDispatchLine</Name>
+	<SourceCode>
+		<Methods>
+			<Method>
+				<Name>classDeclaration</Name>
+				<Source><![CDATA[
+public class DispDispatchLine extends common
+{
+}
+]]></Source>
+			</Method>
+		</Methods>
+	</SourceCode>
+	<Label>@DispatchWB:DispatchLine</Label>
+	<TitleField1>DispatchId</TitleField1>
+	<TitleField2>SalesId</TitleField2>
+	<ClusteredIndex>LineIdx</ClusteredIndex>
+	<PrimaryIndex>LineIdx</PrimaryIndex>
+	<Fields>
+		<AxTableField xmlns:i="http://www.w3.org/2001/XMLSchema-instance" i:type="AxTableFieldString">
+			<Name>DispatchId</Name>
+			<ExtendedDataType>DispDispatchId</ExtendedDataType>
+		</AxTableField>
+		<AxTableField xmlns:i="http://www.w3.org/2001/XMLSchema-instance" i:type="AxTableFieldInt">
+			<Name>DropSequence</Name>
+			<Label>@DispatchWB:DropSequence</Label>
+		</AxTableField>
+		<AxTableField xmlns:i="http://www.w3.org/2001/XMLSchema-instance" i:type="AxTableFieldString">
+			<Name>SalesId</Name>
+			<ExtendedDataType>SalesIdBase</ExtendedDataType>
+		</AxTableField>
+		<AxTableField xmlns:i="http://www.w3.org/2001/XMLSchema-instance" i:type="AxTableFieldString">
+			<Name>CustAccount</Name>
+			<ExtendedDataType>CustAccount</ExtendedDataType>
+		</AxTableField>
+		<AxTableField xmlns:i="http://www.w3.org/2001/XMLSchema-instance" i:type="AxTableFieldString">
+			<Name>DeliveryPostCode</Name>
+			<ExtendedDataType>AddressZipCodeId</ExtendedDataType>
+		</AxTableField>
+		<AxTableField xmlns:i="http://www.w3.org/2001/XMLSchema-instance" i:type="AxTableFieldString">
+			<Name>DeliveryCity</Name>
+			<ExtendedDataType>AddressCity</ExtendedDataType>
+		</AxTableField>
+		<AxTableField xmlns:i="http://www.w3.org/2001/XMLSchema-instance" i:type="AxTableFieldReal">
+			<Name>Latitude</Name>
+			<Label>@DispatchWB:Latitude</Label>
+		</AxTableField>
+		<AxTableField xmlns:i="http://www.w3.org/2001/XMLSchema-instance" i:type="AxTableFieldReal">
+			<Name>Longitude</Name>
+			<Label>@DispatchWB:Longitude</Label>
+		</AxTableField>
+		<AxTableField xmlns:i="http://www.w3.org/2001/XMLSchema-instance" i:type="AxTableFieldTime">
+			<Name>TimeWindowFrom</Name>
+			<Label>@DispatchWB:TimeWindowFrom</Label>
+		</AxTableField>
+		<AxTableField xmlns:i="http://www.w3.org/2001/XMLSchema-instance" i:type="AxTableFieldTime">
+			<Name>TimeWindowTo</Name>
+			<Label>@DispatchWB:TimeWindowTo</Label>
+		</AxTableField>
+		<AxTableField xmlns:i="http://www.w3.org/2001/XMLSchema-instance" i:type="AxTableFieldTime">
+			<Name>PlannedArrival</Name>
+			<Label>@DispatchWB:PlannedArrival</Label>
+		</AxTableField>
+		<AxTableField xmlns:i="http://www.w3.org/2001/XMLSchema-instance" i:type="AxTableFieldReal">
+			<Name>WeightKg</Name>
+			<Label>@DispatchWB:WeightKg</Label>
+		</AxTableField>
+		<AxTableField xmlns:i="http://www.w3.org/2001/XMLSchema-instance" i:type="AxTableFieldReal">
+			<Name>VolumeM3</Name>
+			<Label>@DispatchWB:VolumeM3</Label>
+		</AxTableField>
+		<AxTableField xmlns:i="http://www.w3.org/2001/XMLSchema-instance" i:type="AxTableFieldEnum">
+			<Name>RequiredCompetency</Name>
+			<EnumType>DispDriverCompetency</EnumType>
+		</AxTableField>
+	</Fields>
+	<Indexes>
+		<AxTableIndex>
+			<Name>LineIdx</Name>
+			<AllowDuplicates>No</AllowDuplicates>
+			<Fields>
+				<AxTableIndexField>
+					<DataField>DispatchId</DataField>
+				</AxTableIndexField>
+				<AxTableIndexField>
+					<DataField>DropSequence</DataField>
+				</AxTableIndexField>
+			</Fields>
+		</AxTableIndex>
+	</Indexes>
+	<Relations>
+		<AxTableRelation xmlns:i="http://www.w3.org/2001/XMLSchema-instance" i:type="AxTableRelationForeignKey">
+			<Name>DispDispatchHeader</Name>
+			<RelatedTable>DispDispatchHeader</RelatedTable>
+			<Constraints>
+				<AxTableRelationConstraint xmlns:i="http://www.w3.org/2001/XMLSchema-instance" i:type="AxTableRelationConstraintField">
+					<Name>DispatchId</Name>
+					<Field>DispatchId</Field>
+					<RelatedField>DispatchId</RelatedField>
+				</AxTableRelationConstraint>
+			</Constraints>
+		</AxTableRelation>
+		<AxTableRelation xmlns:i="http://www.w3.org/2001/XMLSchema-instance" i:type="AxTableRelationForeignKey">
+			<Name>SalesTable</Name>
+			<RelatedTable>SalesTable</RelatedTable>
+			<Constraints>
+				<AxTableRelationConstraint xmlns:i="http://www.w3.org/2001/XMLSchema-instance" i:type="AxTableRelationConstraintField">
+					<Name>SalesId</Name>
+					<Field>SalesId</Field>
+					<RelatedField>SalesId</RelatedField>
+				</AxTableRelationConstraint>
+			</Constraints>
+		</AxTableRelation>
+	</Relations>
+</AxTable>

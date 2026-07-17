@@ -1,0 +1,32 @@
+<?xml version="1.0" encoding="utf-8"?>
+<AxEnum xmlns:i="http://www.w3.org/2001/XMLSchema-instance">
+	<Name>DispDriverCompetency</Name>
+	<Label>@DispatchWB:DriverCompetency</Label>
+	<UseEnumValue>No</UseEnumValue>
+	<EnumValues>
+		<AxEnumValue>
+			<Name>Standard</Name>
+			<Label>@DispatchWB:Standard</Label>
+		</AxEnumValue>
+		<AxEnumValue>
+			<Name>HAZMAT</Name>
+			<Label>@DispatchWB:HAZMAT</Label>
+			<Value>1</Value>
+		</AxEnumValue>
+		<AxEnumValue>
+			<Name>Refrigerated</Name>
+			<Label>@DispatchWB:CompRefrigerated</Label>
+			<Value>2</Value>
+		</AxEnumValue>
+		<AxEnumValue>
+			<Name>HeavyGoods</Name>
+			<Label>@DispatchWB:HeavyGoods</Label>
+			<Value>3</Value>
+		</AxEnumValue>
+		<AxEnumValue>
+			<Name>Tanker</Name>
+			<Label>@DispatchWB:CompTanker</Label>
+			<Value>4</Value>
+		</AxEnumValue>
+	</EnumValues>
+</AxEnum>

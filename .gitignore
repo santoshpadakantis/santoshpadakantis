@@ -1,0 +1,16 @@
+# VS Code
+.vscode/
+*.log
+
+# OS
+Thumbs.db
+.DS_Store
+
+# Node (in case you add tooling later)
+node_modules/
+dist/
+build/
+
+# Env
+.env
+.env.*

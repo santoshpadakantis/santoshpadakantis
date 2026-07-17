@@ -1,0 +1,37 @@
+<?xml version="1.0" encoding="utf-8"?>
+<AxEnum xmlns:i="http://www.w3.org/2001/XMLSchema-instance">
+	<Name>DispDispatchStatus</Name>
+	<Label>@DispatchWB:DispatchStatus</Label>
+	<UseEnumValue>No</UseEnumValue>
+	<EnumValues>
+		<AxEnumValue>
+			<Name>Pending</Name>
+			<Label>@DispatchWB:Pending</Label>
+		</AxEnumValue>
+		<AxEnumValue>
+			<Name>Planned</Name>
+			<Label>@DispatchWB:Planned</Label>
+			<Value>1</Value>
+		</AxEnumValue>
+		<AxEnumValue>
+			<Name>Allocated</Name>
+			<Label>@DispatchWB:Allocated</Label>
+			<Value>2</Value>
+		</AxEnumValue>
+		<AxEnumValue>
+			<Name>Dispatched</Name>
+			<Label>@DispatchWB:Dispatched</Label>
+			<Value>3</Value>
+		</AxEnumValue>
+		<AxEnumValue>
+			<Name>Completed</Name>
+			<Label>@DispatchWB:Completed</Label>
+			<Value>4</Value>
+		</AxEnumValue>
+		<AxEnumValue>
+			<Name>Cancelled</Name>
+			<Label>@DispatchWB:Cancelled</Label>
+			<Value>5</Value>
+		</AxEnumValue>
+	</EnumValues>
+</AxEnum>

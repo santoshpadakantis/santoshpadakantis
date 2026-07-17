@@ -1,0 +1,392 @@
+<?xml version="1.0" encoding="utf-8"?>
+<AxForm xmlns:i="http://www.w3.org/2001/XMLSchema-instance">
+	<Name>DispDispatchWorkbench</Name>
+	<SourceCode>
+		<Methods>
+			<Method>
+				<Name>classDeclaration</Name>
+				<Source><![CDATA[
+[Form]
+public class DispDispatchWorkbench extends FormRun
+{
+    TransDate  fromDate;
+    TransDate  toDate;
+    InventLocationId originLocation;
+}
+]]></Source>
+			</Method>
+			<Method>
+				<Name>init</Name>
+				<Source><![CDATA[
+public void init()
+{
+    super();
+    fromDate = today();
+    toDate   = today() + 2; // default 1-3 day horizon
+    DateFrom.dateValue(fromDate);
+    DateTo.dateValue(toDate);
+    element.refreshPending();
+    element.refreshSchedule();
+}
+]]></Source>
+			</Method>
+			<Method>
+				<Name>refreshPending</Name>
+				<Source><![CDATA[
+public void refreshPending()
+{
+    DispRouteOptimizer::loadPendingOrders(DispPendingOrderTmp, fromDate, toDate);
+    PendingGrid_ds.research();
+}
+]]></Source>
+			</Method>
+			<Method>
+				<Name>refreshSchedule</Name>
+				<Source><![CDATA[
+public void refreshSchedule()
+{
+    DispDispatchHeader_ds.query().dataSourceTable(tableNum(DispDispatchHeader))
+        .clearRanges();
+    QueryBuildRange r = DispDispatchHeader_ds.query()
+        .dataSourceTable(tableNum(DispDispatchHeader))
+        .addRange(fieldNum(DispDispatchHeader, DispatchDate));
+    r.value(strFmt('%1..%2', fromDate, toDate));
+    DispDispatchHeader_ds.executeQuery();
+}
+]]></Source>
+			</Method>
+		</Methods>
+	</SourceCode>
+	<Design>
+		<Caption>@DispatchWB:DispatchWorkbench</Caption>
+		<Pattern>OperationalWorkspace</Pattern>
+		<Style>Workspace</Style>
+		<DataSources>
+			<AxFormDataSource>
+				<Name>DispPendingOrderTmp</Name>
+				<Table>DispPendingOrderTmp</Table>
+				<InsertIfEmpty>No</InsertIfEmpty>
+			</AxFormDataSource>
+			<AxFormDataSource>
+				<Name>DispDispatchHeader</Name>
+				<Table>DispDispatchHeader</Table>
+			</AxFormDataSource>
+			<AxFormDataSource>
+				<Name>DispDispatchLine</Name>
+				<Table>DispDispatchLine</Table>
+				<JoinSource>DispDispatchHeader</JoinSource>
+				<LinkType>Delayed</LinkType>
+			</AxFormDataSource>
+			<AxFormDataSource>
+				<Name>DispVehicleTable</Name>
+				<Table>DispVehicleTable</Table>
+			</AxFormDataSource>
+			<AxFormDataSource>
+				<Name>DispDriverTable</Name>
+				<Table>DispDriverTable</Table>
+			</AxFormDataSource>
+		</DataSources>
+		<Controls>
+			<AxFormControl xmlns:i="http://www.w3.org/2001/XMLSchema-instance" i:type="AxFormGroupControl">
+				<Name>FilterGroup</Name>
+				<Type>Group</Type>
+				<Pattern>ToolbarStrip</Pattern>
+				<Controls>
+					<AxFormControl xmlns:i="http://www.w3.org/2001/XMLSchema-instance" i:type="AxFormDateControl">
+						<Name>DateFrom</Name>
+						<Label>@DispatchWB:DateFrom</Label>
+						<Type>Date</Type>
+						<Methods>
+							<Method>
+								<Name>modified</Name>
+								<Source><![CDATA[
+public boolean modified()
+{
+    boolean ret = super();
+    element.fromDate = this.dateValue();
+    if (element.toDate < element.fromDate)
+    {
+        element.toDate = element.fromDate + 2;
+        DateTo.dateValue(element.toDate);
+    }
+    if ((element.toDate - element.fromDate) > 2)
+    {
+        element.toDate = element.fromDate + 2;
+        DateTo.dateValue(element.toDate);
+        warning("@DispatchWB:WindowLimited");
+    }
+    element.refreshPending();
+    element.refreshSchedule();
+    return ret;
+}
+]]></Source>
+							</Method>
+						</Methods>
+					</AxFormControl>
+					<AxFormControl xmlns:i="http://www.w3.org/2001/XMLSchema-instance" i:type="AxFormDateControl">
+						<Name>DateTo</Name>
+						<Label>@DispatchWB:DateTo</Label>
+						<Type>Date</Type>
+						<Methods>
+							<Method>
+								<Name>modified</Name>
+								<Source><![CDATA[
+public boolean modified()
+{
+    boolean ret = super();
+    element.toDate = this.dateValue();
+    if ((element.toDate - element.fromDate) > 2)
+    {
+        element.toDate = element.fromDate + 2;
+        this.dateValue(element.toDate);
+        warning("@DispatchWB:WindowLimited");
+    }
+    element.refreshPending();
+    element.refreshSchedule();
+    return ret;
+}
+]]></Source>
+							</Method>
+						</Methods>
+					</AxFormControl>
+					<AxFormControl xmlns:i="http://www.w3.org/2001/XMLSchema-instance" i:type="AxFormReferenceGroupControl">
+						<Name>OriginLoc</Name>
+						<Label>@DispatchWB:OriginLocation</Label>
+						<Type>ReferenceGroup</Type>
+						<ExtendedDataType>InventLocationId</ExtendedDataType>
+						<Methods>
+							<Method>
+								<Name>modified</Name>
+								<Source><![CDATA[
+public boolean modified()
+{
+    boolean ret = super();
+    element.originLocation = this.text();
+    return ret;
+}
+]]></Source>
+							</Method>
+						</Methods>
+					</AxFormControl>
+					<AxFormControl xmlns:i="http://www.w3.org/2001/XMLSchema-instance" i:type="AxFormButtonControl">
+						<Name>OptimizeAndAllocateBtn</Name>
+						<Text>@DispatchWB:OptimizeAllocate</Text>
+						<Type>Button</Type>
+						<Methods>
+							<Method>
+								<Name>clicked</Name>
+								<Source><![CDATA[
+public void clicked()
+{
+    super();
+    if (!element.originLocation)
+    {
+        warning("@DispatchWB:SelectOrigin");
+        return;
+    }
+    DispRouteOptimizer opt = new DispRouteOptimizer(element.fromDate, element.originLocation);
+    DispDispatchId dispatchId = opt.createDispatch(DispPendingOrderTmp);
+    info(strFmt("@DispatchWB:DispatchCreated", dispatchId));
+    element.refreshPending();
+    element.refreshSchedule();
+}
+]]></Source>
+							</Method>
+						</Methods>
+					</AxFormControl>
+				</Controls>
+			</AxFormControl>
+			<AxFormControl xmlns:i="http://www.w3.org/2001/XMLSchema-instance" i:type="AxFormTabControl">
+				<Name>MainTab</Name>
+				<Type>Tab</Type>
+				<Controls>
+					<AxFormControl xmlns:i="http://www.w3.org/2001/XMLSchema-instance" i:type="AxFormTabPageControl">
+						<Name>PendingPage</Name>
+						<Caption>@DispatchWB:PendingOrders</Caption>
+						<Type>TabPage</Type>
+						<Controls>
+							<AxFormControl xmlns:i="http://www.w3.org/2001/XMLSchema-instance" i:type="AxFormGridControl">
+								<Name>PendingGrid</Name>
+								<Type>Grid</Type>
+								<DataSource>DispPendingOrderTmp</DataSource>
+								<Controls>
+									<AxFormControl xmlns:i="http://www.w3.org/2001/XMLSchema-instance" i:type="AxFormCheckBoxControl">
+										<Name>P_Selected</Name>
+										<DataSource>DispPendingOrderTmp</DataSource>
+										<DataField>Selected</DataField>
+									</AxFormControl>
+									<AxFormControl xmlns:i="http://www.w3.org/2001/XMLSchema-instance" i:type="AxFormStringControl">
+										<Name>P_SalesId</Name>
+										<DataSource>DispPendingOrderTmp</DataSource>
+										<DataField>SalesId</DataField>
+									</AxFormControl>
+									<AxFormControl xmlns:i="http://www.w3.org/2001/XMLSchema-instance" i:type="AxFormStringControl">
+										<Name>P_CustName</Name>
+										<DataSource>DispPendingOrderTmp</DataSource>
+										<DataField>CustName</DataField>
+									</AxFormControl>
+									<AxFormControl xmlns:i="http://www.w3.org/2001/XMLSchema-instance" i:type="AxFormDateControl">
+										<Name>P_ShipDate</Name>
+										<DataSource>DispPendingOrderTmp</DataSource>
+										<DataField>RequestedShipDate</DataField>
+									</AxFormControl>
+									<AxFormControl xmlns:i="http://www.w3.org/2001/XMLSchema-instance" i:type="AxFormStringControl">
+										<Name>P_PostCode</Name>
+										<DataSource>DispPendingOrderTmp</DataSource>
+										<DataField>DeliveryPostCode</DataField>
+									</AxFormControl>
+									<AxFormControl xmlns:i="http://www.w3.org/2001/XMLSchema-instance" i:type="AxFormStringControl">
+										<Name>P_City</Name>
+										<DataSource>DispPendingOrderTmp</DataSource>
+										<DataField>DeliveryCity</DataField>
+									</AxFormControl>
+									<AxFormControl xmlns:i="http://www.w3.org/2001/XMLSchema-instance" i:type="AxFormTimeControl">
+										<Name>P_TWFrom</Name>
+										<DataSource>DispPendingOrderTmp</DataSource>
+										<DataField>TimeWindowFrom</DataField>
+									</AxFormControl>
+									<AxFormControl xmlns:i="http://www.w3.org/2001/XMLSchema-instance" i:type="AxFormTimeControl">
+										<Name>P_TWTo</Name>
+										<DataSource>DispPendingOrderTmp</DataSource>
+										<DataField>TimeWindowTo</DataField>
+									</AxFormControl>
+									<AxFormControl xmlns:i="http://www.w3.org/2001/XMLSchema-instance" i:type="AxFormRealControl">
+										<Name>P_Weight</Name>
+										<DataSource>DispPendingOrderTmp</DataSource>
+										<DataField>WeightKg</DataField>
+									</AxFormControl>
+									<AxFormControl xmlns:i="http://www.w3.org/2001/XMLSchema-instance" i:type="AxFormRealControl">
+										<Name>P_Volume</Name>
+										<DataSource>DispPendingOrderTmp</DataSource>
+										<DataField>VolumeM3</DataField>
+									</AxFormControl>
+									<AxFormControl xmlns:i="http://www.w3.org/2001/XMLSchema-instance" i:type="AxFormComboBoxControl">
+										<Name>P_Comp</Name>
+										<DataSource>DispPendingOrderTmp</DataSource>
+										<DataField>RequiredCompetency</DataField>
+									</AxFormControl>
+								</Controls>
+							</AxFormControl>
+						</Controls>
+					</AxFormControl>
+					<AxFormControl xmlns:i="http://www.w3.org/2001/XMLSchema-instance" i:type="AxFormTabPageControl">
+						<Name>SchedulePage</Name>
+						<Caption>@DispatchWB:FleetSchedule</Caption>
+						<Type>TabPage</Type>
+						<Controls>
+							<AxFormControl xmlns:i="http://www.w3.org/2001/XMLSchema-instance" i:type="AxFormGridControl">
+								<Name>ScheduleGrid</Name>
+								<Type>Grid</Type>
+								<DataSource>DispDispatchHeader</DataSource>
+								<Controls>
+									<AxFormControl xmlns:i="http://www.w3.org/2001/XMLSchema-instance" i:type="AxFormStringControl">
+										<Name>H_DispatchId</Name>
+										<DataSource>DispDispatchHeader</DataSource>
+										<DataField>DispatchId</DataField>
+									</AxFormControl>
+									<AxFormControl xmlns:i="http://www.w3.org/2001/XMLSchema-instance" i:type="AxFormDateControl">
+										<Name>H_Date</Name>
+										<DataSource>DispDispatchHeader</DataSource>
+										<DataField>DispatchDate</DataField>
+									</AxFormControl>
+									<AxFormControl xmlns:i="http://www.w3.org/2001/XMLSchema-instance" i:type="AxFormTimeControl">
+										<Name>H_Depart</Name>
+										<DataSource>DispDispatchHeader</DataSource>
+										<DataField>PlannedDeparture</DataField>
+									</AxFormControl>
+									<AxFormControl xmlns:i="http://www.w3.org/2001/XMLSchema-instance" i:type="AxFormReferenceGroupControl">
+										<Name>H_Vehicle</Name>
+										<DataSource>DispDispatchHeader</DataSource>
+										<DataField>VehicleId</DataField>
+									</AxFormControl>
+									<AxFormControl xmlns:i="http://www.w3.org/2001/XMLSchema-instance" i:type="AxFormReferenceGroupControl">
+										<Name>H_Driver</Name>
+										<DataSource>DispDispatchHeader</DataSource>
+										<DataField>DriverId</DataField>
+									</AxFormControl>
+									<AxFormControl xmlns:i="http://www.w3.org/2001/XMLSchema-instance" i:type="AxFormComboBoxControl">
+										<Name>H_Status</Name>
+										<DataSource>DispDispatchHeader</DataSource>
+										<DataField>DispatchStatus</DataField>
+									</AxFormControl>
+									<AxFormControl xmlns:i="http://www.w3.org/2001/XMLSchema-instance" i:type="AxFormIntControl">
+										<Name>H_Drops</Name>
+										<DataSource>DispDispatchHeader</DataSource>
+										<DataField>DropCount</DataField>
+									</AxFormControl>
+									<AxFormControl xmlns:i="http://www.w3.org/2001/XMLSchema-instance" i:type="AxFormRealControl">
+										<Name>H_Wt</Name>
+										<DataSource>DispDispatchHeader</DataSource>
+										<DataField>TotalWeightKg</DataField>
+									</AxFormControl>
+									<AxFormControl xmlns:i="http://www.w3.org/2001/XMLSchema-instance" i:type="AxFormRealControl">
+										<Name>H_Vol</Name>
+										<DataSource>DispDispatchHeader</DataSource>
+										<DataField>TotalVolumeM3</DataField>
+									</AxFormControl>
+								</Controls>
+							</AxFormControl>
+							<AxFormControl xmlns:i="http://www.w3.org/2001/XMLSchema-instance" i:type="AxFormGridControl">
+								<Name>ScheduleLineGrid</Name>
+								<Caption>@DispatchWB:MultiDropLegs</Caption>
+								<Type>Grid</Type>
+								<DataSource>DispDispatchLine</DataSource>
+								<Controls>
+									<AxFormControl xmlns:i="http://www.w3.org/2001/XMLSchema-instance" i:type="AxFormIntControl">
+										<Name>L_Seq</Name>
+										<DataSource>DispDispatchLine</DataSource>
+										<DataField>DropSequence</DataField>
+									</AxFormControl>
+									<AxFormControl xmlns:i="http://www.w3.org/2001/XMLSchema-instance" i:type="AxFormStringControl">
+										<Name>L_SalesId</Name>
+										<DataSource>DispDispatchLine</DataSource>
+										<DataField>SalesId</DataField>
+									</AxFormControl>
+									<AxFormControl xmlns:i="http://www.w3.org/2001/XMLSchema-instance" i:type="AxFormStringControl">
+										<Name>L_City</Name>
+										<DataSource>DispDispatchLine</DataSource>
+										<DataField>DeliveryCity</DataField>
+									</AxFormControl>
+									<AxFormControl xmlns:i="http://www.w3.org/2001/XMLSchema-instance" i:type="AxFormTimeControl">
+										<Name>L_Arrival</Name>
+										<DataSource>DispDispatchLine</DataSource>
+										<DataField>PlannedArrival</DataField>
+									</AxFormControl>
+									<AxFormControl xmlns:i="http://www.w3.org/2001/XMLSchema-instance" i:type="AxFormTimeControl">
+										<Name>L_TWFrom</Name>
+										<DataSource>DispDispatchLine</DataSource>
+										<DataField>TimeWindowFrom</DataField>
+									</AxFormControl>
+									<AxFormControl xmlns:i="http://www.w3.org/2001/XMLSchema-instance" i:type="AxFormTimeControl">
+										<Name>L_TWTo</Name>
+										<DataSource>DispDispatchLine</DataSource>
+										<DataField>TimeWindowTo</DataField>
+									</AxFormControl>
+								</Controls>
+							</AxFormControl>
+						</Controls>
+					</AxFormControl>
+					<AxFormControl xmlns:i="http://www.w3.org/2001/XMLSchema-instance" i:type="AxFormTabPageControl">
+						<Name>FleetPage</Name>
+						<Caption>@DispatchWB:FleetMaster</Caption>
+						<Type>TabPage</Type>
+						<Controls>
+							<AxFormControl xmlns:i="http://www.w3.org/2001/XMLSchema-instance" i:type="AxFormGridControl">
+								<Name>VehicleGrid</Name>
+								<Caption>@DispatchWB:Vehicles</Caption>
+								<Type>Grid</Type>
+								<DataSource>DispVehicleTable</DataSource>
+							</AxFormControl>
+							<AxFormControl xmlns:i="http://www.w3.org/2001/XMLSchema-instance" i:type="AxFormGridControl">
+								<Name>DriverGrid</Name>
+								<Caption>@DispatchWB:Drivers</Caption>
+								<Type>Grid</Type>
+								<DataSource>DispDriverTable</DataSource>
+							</AxFormControl>
+						</Controls>
+					</AxFormControl>
+				</Controls>
+			</AxFormControl>
+		</Controls>
+	</Design>
+</AxForm>

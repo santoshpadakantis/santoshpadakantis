@@ -1,0 +1,84 @@
+<?xml version="1.0" encoding="utf-8"?>
+<AxTable xmlns:i="http://www.w3.org/2001/XMLSchema-instance">
+	<Name>DispVehicleTable</Name>
+	<SourceCode>
+		<Methods>
+			<Method>
+				<Name>classDeclaration</Name>
+				<Source><![CDATA[
+public class DispVehicleTable extends common
+{
+}
+]]></Source>
+			</Method>
+			<Method>
+				<Name>find</Name>
+				<Source><![CDATA[
+public static DispVehicleTable find(DispVehicleId _vehicleId, boolean _forUpdate = false)
+{
+    DispVehicleTable vehicle;
+    vehicle.selectForUpdate(_forUpdate);
+    select firstonly vehicle
+        where vehicle.VehicleId == _vehicleId;
+    return vehicle;
+}
+]]></Source>
+			</Method>
+		</Methods>
+	</SourceCode>
+	<Label>@DispatchWB:VehicleTable</Label>
+	<TitleField1>VehicleId</TitleField1>
+	<TitleField2>Description</TitleField2>
+	<ClusteredIndex>VehicleIdx</ClusteredIndex>
+	<PrimaryIndex>VehicleIdx</PrimaryIndex>
+	<Fields>
+		<AxTableField xmlns:i="http://www.w3.org/2001/XMLSchema-instance" i:type="AxTableFieldString">
+			<Name>VehicleId</Name>
+			<ExtendedDataType>DispVehicleId</ExtendedDataType>
+			<Mandatory>Yes</Mandatory>
+		</AxTableField>
+		<AxTableField xmlns:i="http://www.w3.org/2001/XMLSchema-instance" i:type="AxTableFieldString">
+			<Name>Description</Name>
+			<ExtendedDataType>Description</ExtendedDataType>
+		</AxTableField>
+		<AxTableField xmlns:i="http://www.w3.org/2001/XMLSchema-instance" i:type="AxTableFieldEnum">
+			<Name>VehicleType</Name>
+			<EnumType>DispVehicleType</EnumType>
+		</AxTableField>
+		<AxTableField xmlns:i="http://www.w3.org/2001/XMLSchema-instance" i:type="AxTableFieldReal">
+			<Name>MaxWeightKg</Name>
+			<Label>@DispatchWB:MaxWeightKg</Label>
+		</AxTableField>
+		<AxTableField xmlns:i="http://www.w3.org/2001/XMLSchema-instance" i:type="AxTableFieldReal">
+			<Name>MaxVolumeM3</Name>
+			<Label>@DispatchWB:MaxVolumeM3</Label>
+		</AxTableField>
+		<AxTableField xmlns:i="http://www.w3.org/2001/XMLSchema-instance" i:type="AxTableFieldInt">
+			<Name>MaxDrops</Name>
+			<Label>@DispatchWB:MaxDrops</Label>
+		</AxTableField>
+		<AxTableField xmlns:i="http://www.w3.org/2001/XMLSchema-instance" i:type="AxTableFieldEnum">
+			<Name>RequiredCompetency</Name>
+			<EnumType>DispDriverCompetency</EnumType>
+		</AxTableField>
+		<AxTableField xmlns:i="http://www.w3.org/2001/XMLSchema-instance" i:type="AxTableFieldString">
+			<Name>HomeLocation</Name>
+			<ExtendedDataType>InventLocationId</ExtendedDataType>
+		</AxTableField>
+		<AxTableField xmlns:i="http://www.w3.org/2001/XMLSchema-instance" i:type="AxTableFieldEnum">
+			<Name>Available</Name>
+			<EnumType>NoYes</EnumType>
+		</AxTableField>
+	</Fields>
+	<Indexes>
+		<AxTableIndex>
+			<Name>VehicleIdx</Name>
+			<AllowDuplicates>No</AllowDuplicates>
+			<Fields>
+				<AxTableIndexField>
+					<DataField>VehicleId</DataField>
+				</AxTableIndexField>
+			</Fields>
+		</AxTableIndex>
+	</Indexes>
+</AxTable>

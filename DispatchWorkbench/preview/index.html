@@ -1,0 +1,1198 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+<meta charset="UTF-8" />
+<meta name="viewport" content="width=device-width, initial-scale=1.0" />
+<title>Dispatch Workbench — Dynamics 365 Finance and Operations</title>
+<style>
+    :root {
+        --d365-blue:        #0078d4;
+        --d365-blue-dark:   #106ebe;
+        --d365-blue-darker: #005a9e;
+        --d365-nav:         #201f1e;
+        --d365-nav-hover:   #323130;
+        --d365-bg:          #faf9f8;
+        --d365-surface:     #ffffff;
+        --d365-border:      #edebe9;
+        --d365-border-dk:   #d2d0ce;
+        --d365-text:        #201f1e;
+        --d365-text-sec:    #605e5c;
+        --d365-text-dis:    #a19f9d;
+        --d365-hover:       #f3f2f1;
+        --d365-selected:    #deecf9;
+        --d365-selected-b:  #c7e0f4;
+        --d365-success:     #107c10;
+        --d365-warning:     #d83b01;
+        --d365-info:        #0078d4;
+    }
+    * { box-sizing: border-box; }
+    body {
+        margin: 0;
+        font-family: "Segoe UI", -apple-system, BlinkMacSystemFont, Roboto, sans-serif;
+        font-size: 13px; color: var(--d365-text);
+        background: var(--d365-bg);
+        height: 100vh; display: flex; flex-direction: column; overflow: hidden;
+    }
+    /* Nav */
+    .nav-bar { height:48px; background:var(--d365-nav); color:#fff; display:flex; align-items:center; padding:0 12px; flex-shrink:0; }
+    .nav-waffle { width:32px; height:32px; display:flex; align-items:center; justify-content:center; border-radius:2px; cursor:pointer; }
+    .nav-waffle:hover { background:var(--d365-nav-hover); }
+    .nav-title { margin-left:8px; font-size:14px; font-weight:600; }
+    .nav-title .sep { opacity:0.5; margin:0 8px; }
+    .nav-spacer { flex:1; }
+    .nav-actions { display:flex; gap:4px; }
+    .nav-icon { width:32px; height:32px; display:flex; align-items:center; justify-content:center; cursor:pointer; border-radius:2px; }
+    .nav-icon:hover { background:var(--d365-nav-hover); }
+    .nav-icon svg { fill:#fff; width:16px; height:16px; }
+    .nav-user { width:32px; height:32px; border-radius:50%; background:linear-gradient(135deg,#0078d4,#005a9e); color:#fff; font-weight:600; font-size:12px; display:flex; align-items:center; justify-content:center; cursor:pointer; margin-left:8px; }
+    /* Page header */
+    .page-header { background:var(--d365-surface); border-bottom:1px solid var(--d365-border); padding:12px 24px 0 24px; flex-shrink:0; }
+    .breadcrumb { font-size:12px; color:var(--d365-text-sec); margin-bottom:4px; }
+    .breadcrumb a { color:var(--d365-blue); text-decoration:none; cursor:pointer; }
+    .breadcrumb a:hover { text-decoration:underline; }
+    .page-title { font-size:20px; font-weight:600; margin:0 0 12px 0; color:var(--d365-text); }
+    .page-title .sub { font-size:13px; font-weight:400; color:var(--d365-text-sec); margin-left:8px; }
+    /* Action pane */
+    .action-pane { background:var(--d365-surface); border-bottom:1px solid var(--d365-border); padding:8px 24px; display:flex; flex-wrap:wrap; gap:4px; align-items:center; flex-shrink:0; }
+    .ap-btn { display:inline-flex; align-items:center; gap:6px; padding:6px 12px; background:transparent; border:1px solid transparent; color:var(--d365-text); font:inherit; cursor:pointer; border-radius:2px; }
+    .ap-btn:hover:not(:disabled) { background:var(--d365-hover); }
+    .ap-btn:active:not(:disabled) { background:var(--d365-selected); }
+    .ap-btn:disabled { color:var(--d365-text-dis); cursor:not-allowed; }
+    .ap-btn.primary { background:var(--d365-blue); color:#fff; border-color:var(--d365-blue); }
+    .ap-btn.primary:hover:not(:disabled) { background:var(--d365-blue-dark); border-color:var(--d365-blue-dark); }
+    .ap-btn.primary:active:not(:disabled) { background:var(--d365-blue-darker); }
+    .ap-btn svg { width:16px; height:16px; fill:currentColor; }
+    .ap-sep { width:1px; height:24px; background:var(--d365-border-dk); margin:0 6px; }
+    .ap-label { font-size:12px; color:var(--d365-text-sec); margin-left:6px; }
+    .ap-input, .ap-date, .ap-select { height:28px; padding:0 8px; border:1px solid var(--d365-border-dk); background:var(--d365-surface); font:inherit; color:var(--d365-text); border-radius:2px; min-width:130px; }
+    .ap-input:focus, .ap-date:focus, .ap-select:focus { outline:none; border-color:var(--d365-blue); box-shadow:0 0 0 1px var(--d365-blue); }
+    /* Tabs */
+    .tab-strip { background:var(--d365-surface); border-bottom:1px solid var(--d365-border); display:flex; padding:0 24px; flex-shrink:0; }
+    .tab { padding:10px 16px; cursor:pointer; border-bottom:2px solid transparent; color:var(--d365-text-sec); font-weight:600; user-select:none; }
+    .tab:hover { color:var(--d365-text); background:var(--d365-hover); }
+    .tab.active { color:var(--d365-blue); border-bottom-color:var(--d365-blue); }
+    .tab .badge { background:var(--d365-selected); color:var(--d365-blue-darker); font-size:11px; font-weight:600; padding:1px 6px; border-radius:8px; margin-left:6px; }
+    /* Content */
+    .content { flex:1; overflow:auto; padding:16px 24px; }
+    .tab-panel { display:none; }
+    .tab-panel.active { display:block; }
+    /* FastTab */
+    .fasttab { background:var(--d365-surface); border:1px solid var(--d365-border); margin-bottom:12px; }
+    .fasttab-header { padding:10px 16px; cursor:pointer; display:flex; align-items:center; gap:8px; border-bottom:1px solid var(--d365-border); user-select:none; }
+    .fasttab-header:hover { background:var(--d365-hover); }
+    .fasttab-header .chev { transition:transform 0.15s; }
+    .fasttab.collapsed .fasttab-header .chev { transform:rotate(-90deg); }
+    .fasttab.collapsed .fasttab-body { display:none; }
+    .fasttab-header .title { font-weight:600; flex:1; }
+    .fasttab-header .summary { color:var(--d365-text-sec); font-size:12px; }
+    .fasttab-body { padding:12px 16px; }
+    /* Grid */
+    .grid-wrap { border:1px solid var(--d365-border-dk); overflow:auto; background:var(--d365-surface); }
+    table.grid { width:100%; border-collapse:collapse; font-size:13px; }
+    .grid thead th { background:var(--d365-hover); border-bottom:1px solid var(--d365-border-dk); border-right:1px solid var(--d365-border); padding:8px 10px; text-align:left; font-weight:600; color:var(--d365-text); position:sticky; top:0; z-index:1; white-space:nowrap; }
+    .grid tbody td { padding:6px 10px; border-bottom:1px solid var(--d365-border); border-right:1px solid var(--d365-border); white-space:nowrap; }
+    .grid tbody tr:hover { background:var(--d365-hover); }
+    .grid tbody tr.selected { background:var(--d365-selected); }
+    .grid tbody tr.selected:hover { background:var(--d365-selected-b); }
+    .grid input[type="checkbox"] { cursor:pointer; }
+    .grid .num { text-align:right; font-variant-numeric:tabular-nums; }
+    /* Pills */
+    .pill { display:inline-flex; align-items:center; padding:2px 8px; border-radius:10px; font-size:11px; font-weight:600; }
+    .pill.pending    { background:#fff4ce; color:#8a6d00; }
+    .pill.planned    { background:#cfe4fa; color:var(--d365-blue-darker); }
+    .pill.allocated  { background:#dff6dd; color:var(--d365-success); }
+    .pill.dispatched { background:#e5d7f6; color:#5c2d91; }
+    .pill.completed  { background:#e1e1e1; color:var(--d365-text-sec); }
+    .pill.cancelled  { background:#fde7e9; color:#a4262c; }
+    .comp-tag { display:inline-block; padding:2px 6px; background:var(--d365-hover); border-radius:2px; font-size:11px; color:var(--d365-text-sec); }
+    .comp-tag.hazmat { background:#fde7e9; color:#a4262c; }
+    .comp-tag.reefer { background:#cfe4fa; color:var(--d365-blue-darker); }
+    .comp-tag.heavy  { background:#fff4ce; color:#8a6d00; }
+    .comp-tag.tanker { background:#e5d7f6; color:#5c2d91; }
+    /* KPIs */
+    .kpis { display:grid; grid-template-columns:repeat(auto-fit,minmax(180px,1fr)); gap:12px; margin-bottom:12px; }
+    .kpi { background:var(--d365-surface); border:1px solid var(--d365-border); padding:12px 16px; }
+    .kpi .label { color:var(--d365-text-sec); font-size:12px; }
+    .kpi .value { font-size:24px; font-weight:600; margin-top:4px; }
+    .kpi .delta { font-size:11px; color:var(--d365-success); }
+    .kpi .delta.warn { color:var(--d365-warning); }
+    .kpi .delta.muted { color:var(--d365-text-sec); }
+    /* Toasts */
+    .msg-bar { position:fixed; top:60px; right:24px; z-index:100; display:flex; flex-direction:column; gap:8px; max-width:380px; }
+    .msg { background:var(--d365-surface); border-left:4px solid var(--d365-info); box-shadow:0 2px 8px rgba(0,0,0,0.1); padding:10px 14px; display:flex; gap:10px; align-items:flex-start; animation:slideIn 0.2s ease-out; }
+    .msg.success { border-left-color:var(--d365-success); }
+    .msg.warning { border-left-color:var(--d365-warning); }
+    .msg.error   { border-left-color:#a4262c; }
+    .msg .icon { flex-shrink:0; width:20px; height:20px; border-radius:50%; background:var(--d365-info); color:#fff; text-align:center; line-height:20px; font-weight:600; font-size:12px; }
+    .msg.success .icon { background:var(--d365-success); }
+    .msg.warning .icon { background:var(--d365-warning); }
+    .msg.error   .icon { background:#a4262c; }
+    .msg .body { flex:1; font-size:13px; }
+    .msg .close { cursor:pointer; color:var(--d365-text-sec); }
+    @keyframes slideIn { from { transform:translateX(20px); opacity:0; } to { transform:translateX(0); opacity:1; } }
+    /* Schedule */
+    .schedule { display:grid; border:1px solid var(--d365-border-dk); background:var(--d365-surface); }
+    .sched-cell-hd { background:var(--d365-hover); border-bottom:1px solid var(--d365-border-dk); border-right:1px solid var(--d365-border); padding:8px 10px; font-weight:600; }
+    .sched-label { border-bottom:1px solid var(--d365-border); border-right:1px solid var(--d365-border); padding:10px; font-weight:600; }
+    .sched-label small { display:block; color:var(--d365-text-sec); font-weight:400; font-size:11px; }
+    .sched-track { position:relative; height:44px; border-bottom:1px solid var(--d365-border); border-right:1px solid var(--d365-border); background: repeating-linear-gradient(to right, transparent 0 calc(100%/24 - 1px), var(--d365-border) calc(100%/24 - 1px) calc(100%/24)); }
+    .trip { position:absolute; top:6px; height:32px; background:var(--d365-blue); color:#fff; font-size:11px; font-weight:600; border-radius:3px; display:flex; align-items:center; padding:0 8px; cursor:pointer; box-shadow:0 1px 3px rgba(0,0,0,0.15); transition:transform 0.1s; overflow:hidden; }
+    .trip:hover { transform:translateY(-1px); box-shadow:0 2px 6px rgba(0,0,0,0.2); }
+    .trip.planned    { background:#106ebe; }
+    .trip.allocated  { background:#107c10; }
+    .trip.dispatched { background:#5c2d91; }
+    .trip.completed  { background:#767676; }
+    /* Dialog */
+    .backdrop { position:fixed; inset:0; background:rgba(0,0,0,0.4); display:none; align-items:center; justify-content:center; z-index:200; }
+    .backdrop.open { display:flex; }
+    .dialog { background:#fff; width:520px; max-width:90vw; max-height:80vh; overflow:auto; box-shadow:0 8px 24px rgba(0,0,0,0.25); }
+    .dialog-hd { padding:14px 20px; border-bottom:1px solid var(--d365-border); display:flex; align-items:center; }
+    .dialog-hd h3 { margin:0; font-size:16px; flex:1; }
+    .dialog-hd .x { cursor:pointer; color:var(--d365-text-sec); }
+    .dialog-body { padding:20px; }
+    .dialog-body dl { margin:0; display:grid; grid-template-columns:140px 1fr; gap:8px 12px; }
+    .dialog-body dt { color:var(--d365-text-sec); }
+    .dialog-body dd { margin:0; font-weight:600; }
+    .dialog-ft { padding:12px 20px; border-top:1px solid var(--d365-border); display:flex; justify-content:flex-end; gap:8px; }
+    .hstack { display:flex; align-items:center; gap:8px; }
+    .muted { color:var(--d365-text-sec); }
+    .strong { font-weight:600; }
+    /* Business mode banner */
+    .mode-banner { background:#f3f9fd; border:1px solid #c7e0f4; border-left:4px solid var(--d365-blue); padding:10px 16px; margin-bottom:12px; display:flex; gap:12px; align-items:center; }
+    .mode-banner .mb-icon { width:24px; height:24px; border-radius:50%; background:var(--d365-blue); color:#fff; text-align:center; line-height:24px; font-weight:700; flex-shrink:0; }
+    .mode-banner .mb-body { flex:1; font-size:12px; }
+    .mode-banner .mb-body b { display:block; font-size:13px; margin-bottom:2px; }
+    .mode-banner.nz { background:#f0f9f0; border-color:#c8e6c9; border-left-color:var(--d365-success); }
+    .mode-banner.nz .mb-icon { background:var(--d365-success); }
+    .mode-banner.supplier { background:#fdf5e6; border-color:#f5deb3; border-left-color:#d97706; }
+    .mode-banner.supplier .mb-icon { background:#d97706; }
+    /* Ownership + compliance */
+    .own-tag { display:inline-block; padding:2px 6px; border-radius:2px; font-size:11px; font-weight:600; }
+    .own-tag.owned { background:#dff6dd; color:var(--d365-success); }
+    .own-tag.sub   { background:#fff4ce; color:#8a6d00; }
+    .comp-pill { display:inline-block; padding:2px 8px; border-radius:10px; font-size:11px; font-weight:600; }
+    .comp-pill.ok       { background:#dff6dd; color:var(--d365-success); }
+    .comp-pill.due      { background:#fff4ce; color:#8a6d00; }
+    .comp-pill.overdue  { background:#fde7e9; color:#a4262c; }
+    .link-btn { background:none; border:none; color:var(--d365-blue); font:inherit; cursor:pointer; padding:0; text-decoration:underline; }
+    .link-btn:hover { color:var(--d365-blue-darker); }
+</style>
+</head>
+<body>
+
+<div class="nav-bar">
+    <div class="nav-waffle" title="Modules">
+        <svg width="18" height="18" viewBox="0 0 24 24" fill="#fff"><path d="M4 4h4v4H4zm6 0h4v4h-4zm6 0h4v4h-4zM4 10h4v4H4zm6 0h4v4h-4zm6 0h4v4h-4zM4 16h4v4H4zm6 0h4v4h-4zm6 0h4v4h-4z"/></svg>
+    </div>
+    <div class="nav-title">
+        Finance and Operations
+        <span class="sep">|</span>
+        Downer Group Australia &mdash; Road Services
+        <span class="sep">&rsaquo;</span>
+        Dispatch Workbench
+    </div>
+    <div class="nav-spacer"></div>
+    <div class="nav-actions">
+        <div class="nav-icon" title="Search"><svg viewBox="0 0 16 16"><path d="M11 6.5A4.5 4.5 0 116.5 2 4.5 4.5 0 0111 6.5zm3.7 8.2l-4-4a5.5 5.5 0 10-.7.7l4 4z"/></svg></div>
+        <div class="nav-icon" title="Notifications"><svg viewBox="0 0 16 16"><path d="M8 1a1 1 0 011 1v.6a5 5 0 014 4.9v3l1 2H2l1-2v-3a5 5 0 014-4.9V2a1 1 0 011-1zm-1.5 12h3a1.5 1.5 0 01-3 0z"/></svg></div>
+        <div class="nav-icon" title="Settings"><svg viewBox="0 0 16 16"><path d="M8 5a3 3 0 100 6 3 3 0 000-6z"/></svg></div>
+    </div>
+    <div class="nav-user" title="Sam P.">SP</div>
+</div>
+
+<div class="page-header">
+    <div class="breadcrumb">
+        <a>Transportation management</a> &rsaquo; <a>Planning</a> &rsaquo; <span>Dispatch Workbench</span>
+    </div>
+    <h1 class="page-title">
+        Transport Dispatch Workbench
+        <span class="sub">Downer Group Australia &middot; Road Services &middot; 1&ndash;3 day planning window</span>
+    </h1>
+</div>
+
+<div class="action-pane">
+    <button class="ap-btn primary" id="btnOptimize">
+        <svg viewBox="0 0 16 16"><path d="M8 1l7 4v6l-7 4-7-4V5l7-4zm0 2L3 5.7v4.6L8 13l5-2.7V5.7L8 3z"/></svg>
+        Optimise &amp; Allocate
+    </button>
+    <button class="ap-btn" id="btnRefresh">
+        <svg viewBox="0 0 16 16"><path d="M8 3V1L4 4l4 3V5a4 4 0 11-4 4H2a6 6 0 106-6z"/></svg>
+        Refresh
+    </button>
+    <button class="ap-btn" id="btnSelectAll">
+        <svg viewBox="0 0 16 16"><path d="M2 2h5v5H2zm7 0h5v5H9zM2 9h5v5H2zm7 0h5v5H9z"/></svg>
+        Select all
+    </button>
+    <button class="ap-btn" id="btnClear">
+        <svg viewBox="0 0 16 16"><path d="M3 3h10v2H3zm1 3h8l-1 8H5z"/></svg>
+        Clear selection
+    </button>
+    <div class="ap-sep"></div>
+    <button class="ap-btn" id="btnAddVehicle">
+        <svg viewBox="0 0 16 16"><path d="M7 1h2v6h6v2H9v6H7V9H1V7h6z"/></svg>
+        New vehicle
+    </button>
+    <button class="ap-btn" id="btnAddDriver">
+        <svg viewBox="0 0 16 16"><path d="M8 8a3 3 0 100-6 3 3 0 000 6zm0 1c-3 0-5 2-5 5v1h10v-1c0-3-2-5-5-5z"/></svg>
+        New driver
+    </button>
+    <div class="ap-sep"></div>
+    <div class="ap-sep"></div>
+    <span class="ap-label">Business mode</span>
+    <select class="ap-select" id="bizMode" style="min-width:220px">
+        <option value="AU-CARRIER">AU &middot; Carrier (freight-only)</option>
+        <option value="AU-SUPPLIER">AU &middot; Supplier / Reseller</option>
+        <option value="NZ-INTEGRATED">NZ &middot; Road Science (integrated)</option>
+    </select>
+    <span class="ap-label">From</span>
+    <input class="ap-date" type="date" id="dateFrom" />
+    <span class="ap-label">To</span>
+    <input class="ap-date" type="date" id="dateTo" />
+    <span class="ap-label">Origin</span>
+    <select class="ap-select" id="origin">
+        <option value="ROSE-01">ROSE-01 &middot; Rosehill Asphalt Plant (NSW)</option>
+        <option value="KMBL-01">KMBL-01 &middot; Kembla Grange Terminal (NSW)</option>
+        <option value="LAVN-01">LAVN-01 &middot; Laverton North Plant (VIC)</option>
+        <option value="WACL-01">WACL-01 &middot; Wacol Bitumen Terminal (QLD)</option>
+        <option value="KWIN-01">KWIN-01 &middot; Kwinana Bitumen Depot (WA)</option>
+    </select>
+</div>
+
+<div class="tab-strip">
+    <div class="tab active" data-tab="pending">Loads needing dispatch <span class="badge" id="pendingCount">0</span></div>
+    <div class="tab" data-tab="schedule">Fleet schedule <span class="badge" id="scheduleCount">0</span></div>
+    <div class="tab" data-tab="fleet">Fleet &amp; Vehicle Register</div>
+</div>
+
+<div class="content">
+    <div class="kpis">
+        <div class="kpi"><div class="label">Orders to dispatch</div><div class="value" id="kpiOrders">0</div><div class="delta" id="kpiOrdersDelta">0 selected in window</div></div>
+        <div class="kpi"><div class="label">Selected weight (kg)</div><div class="value" id="kpiWeight">0</div><div class="delta muted">of fleet capacity</div></div>
+        <div class="kpi"><div class="label">Selected volume (m&sup3;)</div><div class="value" id="kpiVolume">0</div><div class="delta muted">of fleet capacity</div></div>
+        <div class="kpi"><div class="label">Available vehicles</div><div class="value" id="kpiVehicles">0</div><div class="delta muted" id="kpiVehiclesDelta">of 0</div></div>
+        <div class="kpi"><div class="label">Available drivers</div><div class="value" id="kpiDrivers">0</div><div class="delta muted" id="kpiDriversDelta">of 0</div></div>
+    </div>
+
+    <div class="tab-panel active" id="panel-pending">
+        <div class="fasttab">
+            <div class="fasttab-header">
+                <svg class="chev" width="12" height="12" viewBox="0 0 12 12"><path d="M2 4l4 4 4-4" stroke="currentColor" stroke-width="1.5" fill="none"/></svg>
+                <div class="title">Loads needing dispatch</div>
+                <div class="summary" id="pendingSummary">0 loads &middot; 0 selected</div>
+            </div>
+            <div class="fasttab-body" style="padding:0">
+                <div class="grid-wrap">
+                    <table class="grid" id="pendingGrid">
+                        <thead>
+                            <tr>
+                                <th style="width:32px"><input type="checkbox" id="chkAll"></th>
+                                <th>Load ID</th>
+                                <th id="th-ref">Customer PO</th>
+                                <th>Customer</th>
+                                <th>Ship date</th>
+                                <th>Suburb</th>
+                                <th>State</th>
+                                <th>Postcode</th>
+                                <th>Time window</th>
+                                <th class="num">Weight (kg)</th>
+                                <th class="num">Volume (m&sup3;)</th>
+                                <th>Competency</th>
+                            </tr>
+                        </thead>
+                        <tbody></tbody>
+                    </table>
+                </div>
+            </div>
+        </div>
+    </div>
+
+    <div class="tab-panel" id="panel-schedule">
+        <div class="fasttab">
+            <div class="fasttab-header">
+                <svg class="chev" width="12" height="12" viewBox="0 0 12 12"><path d="M2 4l4 4 4-4" stroke="currentColor" stroke-width="1.5" fill="none"/></svg>
+                <div class="title">Fleet schedule &mdash; Gantt view</div>
+                <div class="summary" id="ganttSummary">0 trips scheduled</div>
+            </div>
+            <div class="fasttab-body">
+                <div id="ganttContainer"></div>
+            </div>
+        </div>
+
+        <div class="fasttab">
+            <div class="fasttab-header">
+                <svg class="chev" width="12" height="12" viewBox="0 0 12 12"><path d="M2 4l4 4 4-4" stroke="currentColor" stroke-width="1.5" fill="none"/></svg>
+                <div class="title">Dispatches</div>
+                <div class="summary" id="dispatchSummary">0 dispatches</div>
+            </div>
+            <div class="fasttab-body" style="padding:0">
+                <div class="grid-wrap">
+                    <table class="grid" id="dispatchGrid">
+                        <thead>
+                            <tr>
+                                <th>Dispatch ID</th>
+                                <th>Date</th>
+                                <th>Depart</th>
+                                <th>Vehicle</th>
+                                <th>Driver</th>
+                                <th>Status</th>
+                                <th class="num">Drops</th>
+                                <th class="num">Weight (kg)</th>
+                                <th class="num">Volume (m&sup3;)</th>
+                                <th>Actions</th>
+                            </tr>
+                        </thead>
+                        <tbody></tbody>
+                    </table>
+                </div>
+            </div>
+        </div>
+
+        <div class="fasttab">
+            <div class="fasttab-header">
+                <svg class="chev" width="12" height="12" viewBox="0 0 12 12"><path d="M2 4l4 4 4-4" stroke="currentColor" stroke-width="1.5" fill="none"/></svg>
+                <div class="title">Multi-drop legs</div>
+                <div class="summary" id="legSummary">Select a dispatch to view drops</div>
+            </div>
+            <div class="fasttab-body" style="padding:0">
+                <div class="grid-wrap">
+                    <table class="grid" id="legGrid">
+                        <thead>
+                            <tr>
+                                <th>Seq</th>
+                                <th>Load ID</th>
+                                <th>Customer</th>
+                                <th>Suburb</th>
+                                <th>Planned arrival</th>
+                                <th>Time window</th>
+                                <th class="num">Weight (kg)</th>
+                                <th class="num">Volume (m&sup3;)</th>
+                            </tr>
+                        </thead>
+                        <tbody><tr><td colspan="8" class="muted" style="text-align:center;padding:16px">Select a dispatch to view drops</td></tr></tbody>
+                    </table>
+                </div>
+            </div>
+        </div>
+    </div>
+
+    <div class="tab-panel" id="panel-fleet">
+        <div class="fasttab">
+            <div class="fasttab-header">
+                <svg class="chev" width="12" height="12" viewBox="0 0 12 12"><path d="M2 4l4 4 4-4" stroke="currentColor" stroke-width="1.5" fill="none"/></svg>
+                <div class="title">Prime movers</div>
+                <div class="summary" id="pmSummary">0 prime movers</div>
+            </div>
+            <div class="fasttab-body" style="padding:0">
+                <div class="grid-wrap">
+                    <table class="grid" id="primeMoverGrid">
+                        <thead>
+                            <tr>
+                                <th>Unit ID</th>
+                                <th>Make / Model</th>
+                                <th>Rego</th>
+                                <th>Ownership</th>
+                                <th>Subcontractor</th>
+                                <th>Home depot</th>
+                                <th>Competency</th>
+                                <th class="num">Odometer (km)</th>
+                                <th>Next service</th>
+                                <th>Rego expiry</th>
+                                <th>Available</th>
+                            </tr>
+                        </thead>
+                        <tbody></tbody>
+                    </table>
+                </div>
+            </div>
+        </div>
+
+        <div class="fasttab">
+            <div class="fasttab-header">
+                <svg class="chev" width="12" height="12" viewBox="0 0 12 12"><path d="M2 4l4 4 4-4" stroke="currentColor" stroke-width="1.5" fill="none"/></svg>
+                <div class="title">Trailers &amp; tanker configuration</div>
+                <div class="summary" id="trailerSummary">0 trailers</div>
+            </div>
+            <div class="fasttab-body" style="padding:0">
+                <div class="grid-wrap">
+                    <table class="grid" id="trailerGrid">
+                        <thead>
+                            <tr>
+                                <th>Trailer ID</th>
+                                <th>Type</th>
+                                <th class="num">Capacity (kL)</th>
+                                <th>Insulation / Heating</th>
+                                <th>Product class</th>
+                                <th>Ownership</th>
+                                <th>Currently hooked to</th>
+                                <th>Last inspection</th>
+                                <th>Hookup history</th>
+                            </tr>
+                        </thead>
+                        <tbody></tbody>
+                    </table>
+                </div>
+            </div>
+        </div>
+
+        <div class="fasttab">
+            <div class="fasttab-header">
+                <svg class="chev" width="12" height="12" viewBox="0 0 12 12"><path d="M2 4l4 4 4-4" stroke="currentColor" stroke-width="1.5" fill="none"/></svg>
+                <div class="title">Compliance, service &amp; inspection records</div>
+                <div class="summary" id="complianceSummary">0 items</div>
+            </div>
+            <div class="fasttab-body" style="padding:0">
+                <div class="grid-wrap">
+                    <table class="grid" id="complianceGrid">
+                        <thead>
+                            <tr>
+                                <th>Asset</th>
+                                <th>Type</th>
+                                <th>Item</th>
+                                <th>Last done</th>
+                                <th>Next due</th>
+                                <th>Status</th>
+                                <th>Notes</th>
+                            </tr>
+                        </thead>
+                        <tbody></tbody>
+                    </table>
+                </div>
+            </div>
+        </div>
+
+        <div class="fasttab">
+            <div class="fasttab-header">
+                <svg class="chev" width="12" height="12" viewBox="0 0 12 12"><path d="M2 4l4 4 4-4" stroke="currentColor" stroke-width="1.5" fill="none"/></svg>
+                <div class="title">Utilisation reporting</div>
+                <div class="summary" id="utilSummary">Rolling 30 days</div>
+            </div>
+            <div class="fasttab-body" style="padding:0">
+                <div class="grid-wrap">
+                    <table class="grid" id="utilGrid">
+                        <thead>
+                            <tr>
+                                <th>Asset</th>
+                                <th class="num">Loads / 30d</th>
+                                <th class="num">Total km</th>
+                                <th class="num">km / load</th>
+                                <th class="num">Tonne&middot;km</th>
+                                <th class="num">Downtime %</th>
+                                <th class="num">Cost / tonne&middot;km (AUD)</th>
+                                <th>Utilisation</th>
+                            </tr>
+                        </thead>
+                        <tbody></tbody>
+                    </table>
+                </div>
+            </div>
+        </div>
+
+        <div class="fasttab">
+            <div class="fasttab-header">
+                <svg class="chev" width="12" height="12" viewBox="0 0 12 12"><path d="M2 4l4 4 4-4" stroke="currentColor" stroke-width="1.5" fill="none"/></svg>
+                <div class="title">Drivers</div>
+                <div class="summary" id="driverSummary">0 drivers</div>
+            </div>
+            <div class="fasttab-body" style="padding:0">
+                <div class="grid-wrap">
+                    <table class="grid" id="driverGrid">
+                        <thead>
+                            <tr>
+                                <th>Driver ID</th>
+                                <th>Name</th>
+                                <th>Competency</th>
+                                <th>Shift</th>
+                                <th class="num">Max daily hrs</th>
+                                <th>Available</th>
+                            </tr>
+                        </thead>
+                        <tbody></tbody>
+                    </table>
+                </div>
+            </div>
+        </div>
+    </div>
+</div>
+
+<div class="msg-bar" id="msgBar"></div>
+
+<div class="backdrop" id="dispatchDialog">
+    <div class="dialog">
+        <div class="dialog-hd">
+            <h3 id="dlgTitle">Dispatch details</h3>
+            <span class="x" onclick="closeDialog()">&times;</span>
+        </div>
+        <div class="dialog-body">
+            <dl id="dlgBody"></dl>
+        </div>
+        <div class="dialog-ft">
+            <button class="ap-btn" onclick="closeDialog()">Close</button>
+            <button class="ap-btn primary" onclick="closeDialog()">OK</button>
+        </div>
+    </div>
+</div>
+
+<script>
+const today = new Date();
+const iso = function(d) { return d.toISOString().split('T')[0]; };
+const addDays = function(d, n) { var x = new Date(d); x.setDate(x.getDate()+n); return x; };
+
+var pendingOrders = [
+    { loadId:'BIT-000142', custPO:'PO-TfNSW-88214',    prodOrder:'PROD-4501', cust:'Transport for NSW',                     ship:iso(today),            suburb:'M4 Motorway - Parramatta',    state:'NSW', zip:'2150', twFrom:'09:00', twTo:'12:00', weight:24000, volume:24.0, comp:'Tanker' },
+    { loadId:'BIT-000143', custPO:'PO-WCX-55019',      prodOrder:'PROD-4502', cust:'Sydney Motorway Corporation (WestConnex)',ship:iso(today),          suburb:'M8 Tunnel - Arncliffe',       state:'NSW', zip:'2205', twFrom:'08:00', twTo:'11:00', weight:26000, volume:26.0, comp:'HAZMAT' },
+    { loadId:'BIT-000144', custPO:'PO-TSN-70441',      prodOrder:'PROD-4503', cust:'Transurban Group',                      ship:iso(today),            suburb:'NorthConnex - Wahroonga',     state:'NSW', zip:'2076', twFrom:'13:00', twTo:'17:00', weight:22000, volume:22.0, comp:'Tanker' },
+    { loadId:'BIT-000145', custPO:'PO-TMR-31207',      prodOrder:'PROD-4504', cust:'Department of Transport and Main Roads',ship:iso(addDays(today,1)), suburb:'Bruce Hwy - Nambour',         state:'QLD', zip:'4560', twFrom:'10:00', twTo:'14:00', weight:20000, volume:20.0, comp:'Tanker' },
+    { loadId:'BIT-000146', custPO:'PO-MRWA-45820',     prodOrder:'PROD-4505', cust:'Main Roads Western Australia',          ship:iso(addDays(today,1)), suburb:'Great Northern Hwy - Muchea', state:'WA',  zip:'6501', twFrom:'09:00', twTo:'13:00', weight:28000, volume:28.0, comp:'HAZMAT' },
+    { loadId:'BIT-000147', custPO:'PO-FH-2211',        prodOrder:'PROD-4506', cust:'Fulton Hogan (JV partner)',             ship:iso(addDays(today,1)), suburb:'Hume Hwy - Goulburn',         state:'NSW', zip:'2580', twFrom:'11:00', twTo:'15:00', weight:24000, volume:24.0, comp:'Tanker' },
+    { loadId:'BIT-000148', custPO:'PO-BOR-99312',      prodOrder:'PROD-4507', cust:'Boral Asphalt (supply chain)',          ship:iso(addDays(today,2)), suburb:'Deer Park Batching Plant',    state:'VIC', zip:'3023', twFrom:'08:00', twTo:'12:00', weight:18000, volume:18.0, comp:'Tanker' },
+    { loadId:'BIT-000149', custPO:'PO-JH-51002',       prodOrder:'PROD-4508', cust:'John Holland Rail',                     ship:iso(addDays(today,2)), suburb:'Metro Tunnel - Kensington',   state:'VIC', zip:'3031', twFrom:'14:00', twTo:'18:00', weight:22000, volume:22.0, comp:'HAZMAT' },
+    { loadId:'BIT-000150', custPO:'PO-RIO-77450',      prodOrder:'PROD-4509', cust:'Rio Tinto (Pilbara haul roads)',        ship:iso(addDays(today,2)), suburb:'Karratha Depot',              state:'WA',  zip:'6714', twFrom:'09:00', twTo:'12:00', weight:30000, volume:30.0, comp:'HAZMAT' },
+    { loadId:'BIT-000151', custPO:'PO-BHP-60219',      prodOrder:'PROD-4510', cust:'BHP Iron Ore (Mt Whaleback)',           ship:iso(addDays(today,2)), suburb:'Newman Access Rd',            state:'WA',  zip:'6753', twFrom:'10:00', twTo:'14:00', weight:26000, volume:26.0, comp:'Tanker' }
+].map(function(o){ o.selected = false; return o; });
+
+var vehicles = [
+    { id:'BT-01', desc:'Kenworth T610 + Heated Bitumen Tri-axle Tanker (28kL)',    type:'Tanker',      maxW:28000, maxV:28.0, maxD:2, comp:'Tanker', home:'ROSE-01', avail:true  },
+    { id:'BT-02', desc:'Volvo FH16 + Insulated Bitumen B-Double (42kL)',          type:'Articulated', maxW:42000, maxV:42.0, maxD:3, comp:'HAZMAT', home:'ROSE-01', avail:true  },
+    { id:'BT-03', desc:'Mack Trident + Heated Bitumen Semi-trailer (30kL)',       type:'Tanker',      maxW:30000, maxV:30.0, maxD:2, comp:'HAZMAT', home:'LAVN-01', avail:true  },
+    { id:'BT-04', desc:'Isuzu Giga CYH + Insulated Bitumen Rigid Tanker (14kL)',  type:'Tanker',      maxW:14000, maxV:14.0, maxD:3, comp:'Tanker', home:'WACL-01', avail:true  },
+    { id:'BT-05', desc:'Scania R620 + Heated Bitumen B-Double (44kL)',            type:'Articulated', maxW:44000, maxV:44.0, maxD:3, comp:'HAZMAT', home:'KMBL-01', avail:true  },
+    { id:'BT-06', desc:'Freightliner Argosy + Emulsion Sprayer Truck (10kL)',     type:'Tanker',      maxW:10000, maxV:10.0, maxD:4, comp:'Tanker', home:'KWIN-01', avail:true  },
+    { id:'BT-07', desc:'Hino 700 + Cutback Bitumen Rigid Tanker (12kL)',          type:'Tanker',      maxW:12000, maxV:12.0, maxD:3, comp:'HAZMAT', home:'WACL-01', avail:false },
+    { id:'BT-08', desc:'Western Star 4800 + PMB Heated Tanker (32kL)',            type:'Tanker',      maxW:32000, maxV:32.0, maxD:2, comp:'HAZMAT', home:'LAVN-01', avail:true  }
+];
+
+var drivers = [
+    { id:'DR-01', name:'Jack Thompson',      comp:'Tanker',       shift:'05:00-17:00', maxH:12, avail:true  },
+    { id:'DR-02', name:'Priya Nair',         comp:'HAZMAT',       shift:'06:00-18:00', maxH:12, avail:true  },
+    { id:'DR-03', name:'Liam O\'Brien',      comp:'HAZMAT',       shift:'04:00-16:00', maxH:12, avail:true  },
+    { id:'DR-04', name:'Mei Nguyen',         comp:'Tanker',       shift:'05:00-17:00', maxH:12, avail:true  },
+    { id:'DR-05', name:'Ethan Williams',     comp:'HAZMAT',       shift:'06:00-18:00', maxH:12, avail:true  },
+    { id:'DR-06', name:'Noah Papadopoulos',  comp:'HAZMAT',       shift:'05:00-17:00', maxH:12, avail:true  },
+    { id:'DR-07', name:'Ava Wiradjuri',      comp:'Tanker',       shift:'07:00-19:00', maxH:12, avail:true  },
+    { id:'DR-08', name:'Rajesh Kumar',       comp:'HAZMAT',       shift:'04:00-16:00', maxH:12, avail:false }
+];
+
+var dispatches = [
+    {
+        id:'DISP-2001', date:iso(today), depart:'06:00', vehicle:'BT-01', driver:'DR-01',
+        status:'Allocated', drops:2, weight:26000, volume:26.0, origin:'ROSE-01',
+        legs:[
+            { seq:1, loadId:'BIT-000120', cust:'Transport for NSW',            suburb:'M4 Motorway - Parramatta',   arrival:'07:45', twFrom:'07:00', twTo:'10:00', weight:14000, volume:14.0 },
+            { seq:2, loadId:'BIT-000121', cust:'Sydney Motorway Corporation',  suburb:'WestConnex - Rozelle',       arrival:'10:30', twFrom:'10:00', twTo:'13:00', weight:12000, volume:12.0 }
+        ]
+    }
+];
+
+var competencyRank = { 'Standard':0, 'Refrigerated':1, 'HAZMAT':2, 'HeavyGoods':3, 'Tanker':4 };
+var compClass      = { 'Standard':'', 'Refrigerated':'reefer', 'HAZMAT':'hazmat', 'HeavyGoods':'heavy', 'Tanker':'tanker' };
+var selectedDispatch = null;
+var bizMode = 'AU-CARRIER';
+
+/* ========== Fleet & Vehicle Register data ========== */
+var primeMovers = [
+    { id:'PM-01', make:'Kenworth T610',        rego:'DWR-140',  ownership:'Owned',         subcontractor:'',                          home:'ROSE-01', comp:'Tanker', odo:412300, nextService:iso(addDays(today,12)),  regoExpiry:iso(addDays(today, 96)), avail:true  },
+    { id:'PM-02', make:'Volvo FH16 700',       rego:'DWR-208',  ownership:'Owned',         subcontractor:'',                          home:'ROSE-01', comp:'HAZMAT', odo:298100, nextService:iso(addDays(today, -3)), regoExpiry:iso(addDays(today,152)), avail:true  },
+    { id:'PM-03', make:'Mack Trident',         rego:'MKT-994',  ownership:'Subcontractor', subcontractor:'K&S Freighters',            home:'LAVN-01', comp:'HAZMAT', odo:512000, nextService:iso(addDays(today, 34)), regoExpiry:iso(addDays(today, 62)), avail:true  },
+    { id:'PM-04', make:'Isuzu Giga CYH',       rego:'IGA-311',  ownership:'Owned',         subcontractor:'',                          home:'WACL-01', comp:'Tanker', odo:187600, nextService:iso(addDays(today, 45)), regoExpiry:iso(addDays(today,210)), avail:true  },
+    { id:'PM-05', make:'Scania R620',          rego:'SCN-455',  ownership:'Subcontractor', subcontractor:'Followmont Transport',      home:'KMBL-01', comp:'HAZMAT', odo:604700, nextService:iso(addDays(today,  8)), regoExpiry:iso(addDays(today,-14)), avail:false },
+    { id:'PM-06', make:'Freightliner Argosy',  rego:'FLA-780',  ownership:'Owned',         subcontractor:'',                          home:'KWIN-01', comp:'Tanker', odo:355400, nextService:iso(addDays(today, 61)), regoExpiry:iso(addDays(today, 27)), avail:true  },
+    { id:'PM-07', make:'Hino 700',             rego:'HNO-102',  ownership:'Subcontractor', subcontractor:'Lindsay Australia',         home:'WACL-01', comp:'HAZMAT', odo:229500, nextService:iso(addDays(today, 20)), regoExpiry:iso(addDays(today,180)), avail:true  },
+    { id:'PM-08', make:'Western Star 4800',    rego:'WST-661',  ownership:'Owned',         subcontractor:'',                          home:'LAVN-01', comp:'HAZMAT', odo:98200,  nextService:iso(addDays(today, 55)), regoExpiry:iso(addDays(today,300)), avail:true  }
+];
+
+var trailers = [
+    { id:'TR-101', type:'Heated Bitumen Tri-axle Tanker',  capKL:28, insulation:'Heated 180\u00b0C (diesel burner)', productClass:'Class 3 flammable liquid', ownership:'Owned', hookedTo:'PM-01', lastInspection:iso(addDays(today,-18)) },
+    { id:'TR-102', type:'Insulated Bitumen B-Double lead', capKL:24, insulation:'Insulated (no heat)',              productClass:'Class 3',                   ownership:'Owned', hookedTo:'PM-02', lastInspection:iso(addDays(today,-32)) },
+    { id:'TR-103', type:'Insulated Bitumen B-Double dolly',capKL:18, insulation:'Insulated (no heat)',              productClass:'Class 3',                   ownership:'Owned', hookedTo:'PM-02', lastInspection:iso(addDays(today,-32)) },
+    { id:'TR-104', type:'Heated Bitumen Semi-trailer',     capKL:30, insulation:'Heated 200\u00b0C',                productClass:'Class 3',                   ownership:'Owned', hookedTo:'PM-03', lastInspection:iso(addDays(today, -9)) },
+    { id:'TR-105', type:'Insulated Rigid Tanker (mounted)',capKL:14, insulation:'Insulated',                        productClass:'Class 3',                   ownership:'Owned', hookedTo:'PM-04', lastInspection:iso(addDays(today,-45)) },
+    { id:'TR-106', type:'Heated Bitumen B-Double lead',    capKL:26, insulation:'Heated 180\u00b0C',                productClass:'Class 3',                   ownership:'Owned', hookedTo:'PM-05', lastInspection:iso(addDays(today,-70)) },
+    { id:'TR-107', type:'Heated Bitumen B-Double dolly',   capKL:18, insulation:'Heated 180\u00b0C',                productClass:'Class 3',                   ownership:'Owned', hookedTo:'PM-05', lastInspection:iso(addDays(today,-70)) },
+    { id:'TR-108', type:'Emulsion Sprayer Tanker',         capKL:10, insulation:'Ambient',                          productClass:'Bitumen emulsion',          ownership:'Owned', hookedTo:'PM-06', lastInspection:iso(addDays(today,-12)) },
+    { id:'TR-109', type:'Cutback Bitumen Rigid Tanker',    capKL:12, insulation:'Ambient (solvent-cutback)',        productClass:'Class 3',                   ownership:'Owned', hookedTo:'PM-07', lastInspection:iso(addDays(today,-25)) },
+    { id:'TR-110', type:'PMB Heated Tanker',               capKL:32, insulation:'Heated 190\u00b0C, N2 blanket',    productClass:'Polymer-modified bitumen', ownership:'Owned', hookedTo:'PM-08', lastInspection:iso(addDays(today, -4)) }
+];
+
+/* Historical trailer -> prime mover pairings (proves trailer towed by different PMs over time) */
+var hookupHistory = {
+    'TR-101': [
+        { from:iso(addDays(today,-90)), to:iso(addDays(today,-61)), pm:'PM-06', driver:'DR-04' },
+        { from:iso(addDays(today,-60)), to:iso(addDays(today,-31)), pm:'PM-02', driver:'DR-02' },
+        { from:iso(addDays(today,-30)), to:'current',               pm:'PM-01', driver:'DR-01' }
+    ],
+    'TR-104': [
+        { from:iso(addDays(today,-120)),to:iso(addDays(today,-61)), pm:'PM-05', driver:'DR-05' },
+        { from:iso(addDays(today,-60)), to:'current',               pm:'PM-03', driver:'DR-03' }
+    ],
+    'TR-106': [
+        { from:iso(addDays(today,-75)), to:iso(addDays(today,-30)), pm:'PM-08', driver:'DR-06' },
+        { from:iso(addDays(today,-29)), to:'current',               pm:'PM-05', driver:'DR-05' }
+    ]
+};
+
+/* Utilisation stats — rolling 30 days */
+var utilStats = [
+    { asset:'PM-01', loads:42, km:14820, tkm:369000, downtime: 4, cpk:0.084 },
+    { asset:'PM-02', loads:38, km:12100, tkm:315000, downtime: 8, cpk:0.091 },
+    { asset:'PM-03', loads:31, km:18450, tkm:498000, downtime: 6, cpk:0.078 },
+    { asset:'PM-04', loads:44, km: 9640, tkm:135000, downtime: 3, cpk:0.102 },
+    { asset:'PM-05', loads:12, km: 4820, tkm:212000, downtime:22, cpk:0.128 },
+    { asset:'PM-06', loads:36, km:11200, tkm:112000, downtime: 5, cpk:0.116 },
+    { asset:'PM-07', loads:29, km: 7600, tkm: 91000, downtime: 7, cpk:0.121 },
+    { asset:'PM-08', loads:18, km: 6100, tkm:195000, downtime:14, cpk:0.098 }
+];
+
+/* Compliance / service / inspection records */
+var complianceRecords = [
+    { asset:'PM-02', kind:'Service',      item:'A-service (100,000 km)',           last:iso(addDays(today,-95)), due:iso(addDays(today, -3)), notes:'Booked at OEM dealer' },
+    { asset:'PM-05', kind:'Registration', item:'Heavy vehicle rego renewal',       last:iso(addDays(today,-380)),due:iso(addDays(today,-14)), notes:'OVERDUE - vehicle grounded' },
+    { asset:'PM-06', kind:'Registration', item:'Heavy vehicle rego renewal',       last:iso(addDays(today,-330)),due:iso(addDays(today, 27)), notes:'' },
+    { asset:'TR-102', kind:'Inspection',  item:'Annual pressure vessel inspection',last:iso(addDays(today,-360)),due:iso(addDays(today,  5)), notes:'NHVR AIS due' },
+    { asset:'TR-105', kind:'Inspection',  item:'6-monthly brake test',             last:iso(addDays(today,-190)),due:iso(addDays(today,-10)), notes:'OVERDUE' },
+    { asset:'TR-106', kind:'Service',     item:'Insulation integrity check',       last:iso(addDays(today,-70)), due:iso(addDays(today, 20)), notes:'' },
+    { asset:'TR-108', kind:'Certification',item:'Emulsion sprayer calibration',    last:iso(addDays(today,-12)), due:iso(addDays(today,353)), notes:'' },
+    { asset:'TR-110', kind:'Inspection',  item:'ADG dangerous goods placard check',last:iso(addDays(today, -4)), due:iso(addDays(today, 26)), notes:'' },
+    { asset:'PM-01', kind:'Service',      item:'B-service (50,000 km)',            last:iso(addDays(today,-40)), due:iso(addDays(today, 12)), notes:'' },
+    { asset:'PM-03', kind:'Driver',       item:'Fatigue management audit',         last:iso(addDays(today,-160)),due:iso(addDays(today, 34)), notes:'Chain of Responsibility' }
+];
+
+function toast(text, kind) {
+    kind = kind || 'info';
+    var bar = document.getElementById('msgBar');
+    var div = document.createElement('div');
+    div.className = 'msg ' + kind;
+    var icon = kind === 'success' ? '\u2713' : kind === 'warning' ? '!' : kind === 'error' ? '\u2715' : 'i';
+    div.innerHTML = '<div class="icon">' + icon + '</div><div class="body">' + text + '</div><div class="close">\u2715</div>';
+    div.querySelector('.close').addEventListener('click', function(){ div.remove(); });
+    bar.appendChild(div);
+    setTimeout(function(){ if (div.parentNode) div.remove(); }, 5000);
+}
+
+function fmt(n, d) { d = d || 0; return Number(n).toLocaleString(undefined, {minimumFractionDigits:d, maximumFractionDigits:d}); }
+function hmToMin(hm) { var p = hm.split(':').map(Number); return p[0]*60+p[1]; }
+function minToHm(mn) { var h=Math.floor(mn/60), m=mn%60; return String(h).padStart(2,'0')+':'+String(m).padStart(2,'0'); }
+
+function renderPending() {
+    var from = document.getElementById('dateFrom').value;
+    var to   = document.getElementById('dateTo').value;
+    var rows = pendingOrders.filter(function(o){ return o.ship >= from && o.ship <= to; });
+
+    // Mode-aware reference column header
+    var refHeader = bizMode === 'NZ-INTEGRATED' ? 'Production order' :
+                    bizMode === 'AU-SUPPLIER'   ? 'Sales / PO ref'   :
+                                                  'Customer PO';
+    document.getElementById('th-ref').textContent = refHeader;
+
+    var tbody = document.querySelector('#pendingGrid tbody');
+    tbody.innerHTML = '';
+    rows.forEach(function(o) {
+        var idx = pendingOrders.indexOf(o);
+        var tr = document.createElement('tr');
+        if (o.selected) tr.classList.add('selected');
+        var refCell = bizMode === 'NZ-INTEGRATED' ? o.prodOrder :
+                      bizMode === 'AU-SUPPLIER'   ? o.custPO + ' / SO-' + o.loadId.slice(-6) :
+                                                    o.custPO;
+        tr.innerHTML =
+            '<td><input type="checkbox" ' + (o.selected?'checked':'') + ' data-idx="' + idx + '"></td>' +
+            '<td class="strong">' + o.loadId + '</td>' +
+            '<td>' + refCell + '</td>' +
+            '<td>' + o.cust + '</td>' +
+            '<td>' + o.ship + '</td>' +
+            '<td>' + o.suburb + '</td>' +
+            '<td>' + o.state + '</td>' +
+            '<td>' + o.zip + '</td>' +
+            '<td>' + o.twFrom + ' - ' + o.twTo + '</td>' +
+            '<td class="num">' + fmt(o.weight) + '</td>' +
+            '<td class="num">' + fmt(o.volume,1) + '</td>' +
+            '<td><span class="comp-tag ' + compClass[o.comp] + '">' + o.comp + '</span></td>';
+        tbody.appendChild(tr);
+    });
+
+    tbody.querySelectorAll('input[type=checkbox]').forEach(function(cb) {
+        cb.addEventListener('change', function(e) {
+            pendingOrders[+e.target.dataset.idx].selected = e.target.checked;
+            renderPending(); renderKpis();
+        });
+    });
+
+    var selCount = rows.filter(function(o){ return o.selected; }).length;
+    document.getElementById('pendingCount').textContent = rows.length;
+    document.getElementById('pendingSummary').textContent = rows.length + ' loads \u00b7 ' + selCount + ' selected';
+}
+
+function renderDispatches() {
+    var from = document.getElementById('dateFrom').value;
+    var to   = document.getElementById('dateTo').value;
+    var rows = dispatches.filter(function(d){ return d.date >= from && d.date <= to; });
+
+    var tbody = document.querySelector('#dispatchGrid tbody');
+    tbody.innerHTML = '';
+    rows.forEach(function(d) {
+        var tr = document.createElement('tr');
+        if (selectedDispatch && d.id === selectedDispatch.id) tr.classList.add('selected');
+        tr.innerHTML =
+            '<td class="strong">' + d.id + '</td>' +
+            '<td>' + d.date + '</td>' +
+            '<td>' + d.depart + '</td>' +
+            '<td>' + d.vehicle + '</td>' +
+            '<td>' + d.driver + '</td>' +
+            '<td><span class="pill ' + d.status.toLowerCase() + '">' + d.status + '</span></td>' +
+            '<td class="num">' + d.drops + '</td>' +
+            '<td class="num">' + fmt(d.weight) + '</td>' +
+            '<td class="num">' + fmt(d.volume,1) + '</td>' +
+            '<td>' +
+                '<button class="ap-btn" data-act="view" data-id="' + d.id + '" style="padding:2px 8px">View</button> ' +
+                '<button class="ap-btn" data-act="advance" data-id="' + d.id + '" style="padding:2px 8px">Advance</button>' +
+            '</td>';
+        tr.addEventListener('click', function(){ selectedDispatch = d; renderDispatches(); renderLegs(); });
+        tbody.appendChild(tr);
+    });
+
+    tbody.querySelectorAll('button[data-act]').forEach(function(b) {
+        b.addEventListener('click', function(e) {
+            e.stopPropagation();
+            var d = dispatches.find(function(x){ return x.id === b.dataset.id; });
+            if (b.dataset.act === 'view') openDispatch(d);
+            else advanceDispatch(d);
+        });
+    });
+
+    document.getElementById('scheduleCount').textContent   = rows.length;
+    document.getElementById('dispatchSummary').textContent = rows.length + ' dispatches';
+    document.getElementById('ganttSummary').textContent    = rows.length + ' trips scheduled';
+    renderGantt(rows);
+}
+
+function renderLegs() {
+    var tbody = document.querySelector('#legGrid tbody');
+    if (!selectedDispatch) {
+        tbody.innerHTML = '<tr><td colspan="8" class="muted" style="text-align:center;padding:16px">Select a dispatch to view drops</td></tr>';
+        document.getElementById('legSummary').textContent = 'Select a dispatch to view drops';
+        return;
+    }
+    tbody.innerHTML = '';
+    selectedDispatch.legs.forEach(function(l) {
+        var tr = document.createElement('tr');
+        tr.innerHTML =
+            '<td class="strong">' + l.seq + '</td>' +
+            '<td>' + l.loadId + '</td>' +
+            '<td>' + l.cust + '</td>' +
+            '<td>' + l.suburb + '</td>' +
+            '<td>' + l.arrival + '</td>' +
+            '<td>' + l.twFrom + ' - ' + l.twTo + '</td>' +
+            '<td class="num">' + fmt(l.weight) + '</td>' +
+            '<td class="num">' + fmt(l.volume,1) + '</td>';
+        tbody.appendChild(tr);
+    });
+    document.getElementById('legSummary').textContent =
+        selectedDispatch.id + ' \u00b7 ' + selectedDispatch.legs.length + ' drops';
+}
+
+function renderGantt(rows) {
+    var container = document.getElementById('ganttContainer');
+    var from = document.getElementById('dateFrom').value;
+    var to   = document.getElementById('dateTo').value;
+    var days = [];
+    for (var d = new Date(from); d <= new Date(to); d = addDays(d,1)) days.push(iso(d));
+
+    var html = '<div class="schedule" style="grid-template-columns: 180px repeat(' + days.length + ', 1fr)">';
+    html += '<div class="sched-cell-hd">Vehicle</div>';
+    days.forEach(function(dayIso){ html += '<div class="sched-cell-hd" style="text-align:center">' + dayIso + '</div>'; });
+
+    vehicles.forEach(function(v) {
+        html += '<div class="sched-label">' + v.id + '<small>' + v.desc + '</small></div>';
+        days.forEach(function(dayIso) {
+            html += '<div class="sched-track" data-vh="' + v.id + '" data-day="' + dayIso + '"></div>';
+        });
+    });
+    html += '</div>';
+    container.innerHTML = html;
+
+    rows.forEach(function(d) {
+        var track = container.querySelector('.sched-track[data-vh="' + d.vehicle + '"][data-day="' + d.date + '"]');
+        if (!track) return;
+        var startMin = hmToMin(d.depart);
+        var endMin   = Math.min(24*60, startMin + Math.max(60, d.drops * 45 + 60));
+        var leftPct  = (startMin / (24*60)) * 100;
+        var widthPct = ((endMin - startMin) / (24*60)) * 100;
+        var chip = document.createElement('div');
+        chip.className = 'trip ' + d.status.toLowerCase();
+        chip.style.left  = leftPct + '%';
+        chip.style.width = widthPct + '%';
+        chip.textContent = d.id + ' \u00b7 ' + d.drops + ' drops';
+        chip.title = d.id + ' - ' + d.driver + ' - ' + d.depart;
+        chip.addEventListener('click', function(){ openDispatch(d); });
+        track.appendChild(chip);
+    });
+}
+
+function daysUntil(dateStr) {
+    var d = new Date(dateStr); d.setHours(0,0,0,0);
+    var t = new Date(); t.setHours(0,0,0,0);
+    return Math.round((d - t) / 86400000);
+}
+function complianceStatus(dateStr) {
+    var d = daysUntil(dateStr);
+    if (d < 0)  return { cls:'overdue', text:'Overdue ' + Math.abs(d) + 'd' };
+    if (d <= 14)return { cls:'due',     text:'Due in ' + d + 'd' };
+    return { cls:'ok', text:'OK' };
+}
+
+function renderModeBanner() {
+    var host = document.getElementById('modeBannerHost');
+    var cfg;
+    if (bizMode === 'AU-CARRIER') {
+        cfg = { cls:'', icon:'AU', title:'AU \u2014 Carrier role (freight-only)',
+                body:'Customer has already ordered product from a supplier. Downer is booked as the <b>carrier</b> only \u2014 no product sourcing, no invoicing for goods. Loads reference the <b>Customer PO</b>. Optimise &amp; Allocate assigns truck + driver against freight-only orders.' };
+    } else if (bizMode === 'AU-SUPPLIER') {
+        cfg = { cls:'supplier', icon:'AU', title:'AU \u2014 Supplier / Reseller role',
+                body:'Downer <b>sources the product</b>, sells it, and freights it. Loads carry both a Sales Order and Customer PO reference. Optimise &amp; Allocate reserves inventory at the origin plant before assigning the truck.' };
+    } else {
+        cfg = { cls:'nz', icon:'NZ', title:'NZ \u2014 Road Science (integrated business unit)',
+                body:'Transport, plant and product management sit inside a single unit. Load selection here <b>pushes directly into the production schedule</b> upstream (step 3), so plant batching and truck allocation are co-planned.' };
+    }
+    host.innerHTML = '<div class="mode-banner ' + cfg.cls + '"><div class="mb-icon">' + cfg.icon + '</div><div class="mb-body"><b>' + cfg.title + '</b>' + cfg.body + '</div></div>';
+}
+
+function renderFleet() {
+    // -------- Prime movers --------
+    var pmTb = document.querySelector('#primeMoverGrid tbody');
+    pmTb.innerHTML = '';
+    primeMovers.forEach(function(v) {
+        var svc  = complianceStatus(v.nextService);
+        var rego = complianceStatus(v.regoExpiry);
+        var tr = document.createElement('tr');
+        tr.innerHTML =
+            '<td class="strong">' + v.id + '</td>' +
+            '<td>' + v.make + '</td>' +
+            '<td>' + v.rego + '</td>' +
+            '<td><span class="own-tag ' + (v.ownership==='Owned'?'owned':'sub') + '">' + v.ownership + '</span></td>' +
+            '<td>' + (v.subcontractor || '<span class="muted">\u2013</span>') + '</td>' +
+            '<td>' + v.home + '</td>' +
+            '<td><span class="comp-tag ' + compClass[v.comp] + '">' + v.comp + '</span></td>' +
+            '<td class="num">' + fmt(v.odo) + '</td>' +
+            '<td>' + v.nextService + ' <span class="comp-pill ' + svc.cls + '">' + svc.text + '</span></td>' +
+            '<td>' + v.regoExpiry + ' <span class="comp-pill ' + rego.cls + '">' + rego.text + '</span></td>' +
+            '<td><label class="hstack" style="cursor:pointer"><input type="checkbox" ' + (v.avail?'checked':'') + ' data-pm="' + v.id + '"> ' + (v.avail?'Available':'Unavailable') + '</label></td>';
+        pmTb.appendChild(tr);
+    });
+    pmTb.querySelectorAll('input[data-pm]').forEach(function(cb) {
+        cb.addEventListener('change', function(e) {
+            var v = primeMovers.find(function(x){ return x.id === e.target.dataset.pm; });
+            v.avail = e.target.checked;
+            renderFleet();
+            toast(v.id + ' marked ' + (v.avail?'available':'unavailable') + '.', 'info');
+        });
+    });
+    document.getElementById('pmSummary').textContent =
+        primeMovers.length + ' prime movers \u00b7 ' +
+        primeMovers.filter(function(v){return v.ownership==='Owned';}).length + ' owned, ' +
+        primeMovers.filter(function(v){return v.ownership==='Subcontractor';}).length + ' subcontractor';
+
+    // -------- Trailers --------
+    var trTb = document.querySelector('#trailerGrid tbody');
+    trTb.innerHTML = '';
+    trailers.forEach(function(t) {
+        var insp = complianceStatus(iso(addDays(new Date(t.lastInspection), 365)));
+        var tr = document.createElement('tr');
+        tr.innerHTML =
+            '<td class="strong">' + t.id + '</td>' +
+            '<td>' + t.type + '</td>' +
+            '<td class="num">' + t.capKL + '</td>' +
+            '<td>' + t.insulation + '</td>' +
+            '<td>' + t.productClass + '</td>' +
+            '<td><span class="own-tag ' + (t.ownership==='Owned'?'owned':'sub') + '">' + t.ownership + '</span></td>' +
+            '<td>' + t.hookedTo + '</td>' +
+            '<td>' + t.lastInspection + ' <span class="comp-pill ' + insp.cls + '">' + insp.text + '</span></td>' +
+            '<td><button class="link-btn" data-hist="' + t.id + '">View history</button></td>';
+        trTb.appendChild(tr);
+    });
+    trTb.querySelectorAll('button[data-hist]').forEach(function(b) {
+        b.addEventListener('click', function(){ openHookupHistory(b.dataset.hist); });
+    });
+    document.getElementById('trailerSummary').textContent =
+        trailers.length + ' trailers \u00b7 total capacity ' +
+        trailers.reduce(function(s,t){return s+t.capKL;},0) + ' kL';
+
+    // -------- Compliance --------
+    var cpTb = document.querySelector('#complianceGrid tbody');
+    cpTb.innerHTML = '';
+    var sorted = complianceRecords.slice().sort(function(a,b){
+        return daysUntil(a.due) - daysUntil(b.due);
+    });
+    sorted.forEach(function(r) {
+        var st = complianceStatus(r.due);
+        var tr = document.createElement('tr');
+        tr.innerHTML =
+            '<td class="strong">' + r.asset + '</td>' +
+            '<td>' + r.kind + '</td>' +
+            '<td>' + r.item + '</td>' +
+            '<td>' + r.last + '</td>' +
+            '<td>' + r.due + '</td>' +
+            '<td><span class="comp-pill ' + st.cls + '">' + st.text + '</span></td>' +
+            '<td>' + (r.notes || '<span class="muted">\u2013</span>') + '</td>';
+        cpTb.appendChild(tr);
+    });
+    var overdue = complianceRecords.filter(function(r){return complianceStatus(r.due).cls==='overdue';}).length;
+    var due     = complianceRecords.filter(function(r){return complianceStatus(r.due).cls==='due';}).length;
+    document.getElementById('complianceSummary').textContent =
+        complianceRecords.length + ' items \u00b7 ' + overdue + ' overdue, ' + due + ' due within 14d';
+
+    // -------- Utilisation --------
+    var utTb = document.querySelector('#utilGrid tbody');
+    utTb.innerHTML = '';
+    utilStats.forEach(function(u) {
+        var kpl  = u.loads ? (u.km / u.loads) : 0;
+        var util = Math.max(0, Math.min(100, 100 - u.downtime));
+        var barColor = util > 70 ? 'var(--d365-success)' : util > 40 ? '#8a6d00' : '#a4262c';
+        var tr = document.createElement('tr');
+        tr.innerHTML =
+            '<td class="strong">' + u.asset + '</td>' +
+            '<td class="num">' + u.loads + '</td>' +
+            '<td class="num">' + fmt(u.km) + '</td>' +
+            '<td class="num">' + fmt(kpl,0) + '</td>' +
+            '<td class="num">' + fmt(u.tkm) + '</td>' +
+            '<td class="num">' + u.downtime + '%</td>' +
+            '<td class="num">$' + u.cpk.toFixed(3) + '</td>' +
+            '<td><div style="background:#edebe9;width:120px;height:10px;border-radius:5px;overflow:hidden"><div style="width:' + util + '%;height:100%;background:' + barColor + '"></div></div><small class="muted">' + util + '% avail</small></td>';
+        utTb.appendChild(tr);
+    });
+    document.getElementById('utilSummary').textContent =
+        'Rolling 30 days \u00b7 ' + utilStats.reduce(function(s,u){return s+u.loads;},0) + ' loads, ' +
+        fmt(utilStats.reduce(function(s,u){return s+u.km;},0)) + ' km';
+
+    // -------- Drivers --------
+    var dtb = document.querySelector('#driverGrid tbody');
+    dtb.innerHTML = '';
+    drivers.forEach(function(d) {
+        var tr = document.createElement('tr');
+        tr.innerHTML =
+            '<td class="strong">' + d.id + '</td>' +
+            '<td>' + d.name + '</td>' +
+            '<td><span class="comp-tag ' + compClass[d.comp] + '">' + d.comp + '</span></td>' +
+            '<td>' + d.shift + '</td>' +
+            '<td class="num">' + d.maxH + '</td>' +
+            '<td><label class="hstack" style="cursor:pointer"><input type="checkbox" ' + (d.avail?'checked':'') + ' data-dr="' + d.id + '"> ' + (d.avail?'Available':'Unavailable') + '</label></td>';
+        dtb.appendChild(tr);
+    });
+    dtb.querySelectorAll('input[data-dr]').forEach(function(cb) {
+        cb.addEventListener('change', function(e) {
+            var d = drivers.find(function(x){ return x.id===e.target.dataset.dr; });
+            d.avail = e.target.checked;
+            renderFleet(); renderKpis();
+            toast(d.id + ' marked ' + (d.avail?'available':'unavailable') + '.', 'info');
+        });
+    });
+    document.getElementById('driverSummary').textContent =
+        drivers.length + ' drivers \u00b7 ' + drivers.filter(function(d){return d.avail;}).length + ' available';
+}
+
+function openHookupHistory(trailerId) {
+    var hist = hookupHistory[trailerId] || [];
+    var rows = '';
+    if (!hist.length) {
+        rows = '<tr><td colspan="4" class="muted" style="text-align:center;padding:12px">No history recorded</td></tr>';
+    } else {
+        hist.slice().reverse().forEach(function(h) {
+            rows += '<tr><td>' + h.from + '</td><td>' + h.to + '</td><td class="strong">' + h.pm + '</td><td>' + h.driver + '</td></tr>';
+        });
+    }
+    document.getElementById('dlgTitle').textContent = 'Trailer ' + trailerId + ' \u2014 hookup history';
+    document.getElementById('dlgBody').innerHTML =
+        '<div style="grid-column:1/-1"><table class="grid" style="width:100%"><thead><tr><th>From</th><th>To</th><th>Prime mover</th><th>Driver</th></tr></thead><tbody>' + rows + '</tbody></table></div>';
+    document.getElementById('dispatchDialog').classList.add('open');
+}
+
+function renderKpis() {
+    var from = document.getElementById('dateFrom').value;
+    var to   = document.getElementById('dateTo').value;
+    var inWindow = pendingOrders.filter(function(o){ return o.ship >= from && o.ship <= to; });
+    var sel = inWindow.filter(function(o){ return o.selected; });
+
+    document.getElementById('kpiOrders').textContent      = inWindow.length;
+    document.getElementById('kpiOrdersDelta').textContent = sel.length + ' selected in window';
+    document.getElementById('kpiWeight').textContent      = fmt(sel.reduce(function(s,o){return s+o.weight;},0));
+    document.getElementById('kpiVolume').textContent      = fmt(sel.reduce(function(s,o){return s+o.volume;},0),1);
+
+    var availV = vehicles.filter(function(v){return v.avail;}).length;
+    var availD = drivers.filter(function(d){return d.avail;}).length;
+    document.getElementById('kpiVehicles').textContent       = availV;
+    document.getElementById('kpiDrivers').textContent        = availD;
+    document.getElementById('kpiVehiclesDelta').textContent  = 'of ' + vehicles.length;
+    document.getElementById('kpiDriversDelta').textContent   = 'of ' + drivers.length;
+}
+
+function optimizeAndAllocate() {
+    var selected = pendingOrders.filter(function(o){ return o.selected; });
+    if (!selected.length) { toast('No loads selected for dispatch.', 'warning'); return; }
+
+    var totWt  = selected.reduce(function(s,o){return s+o.weight;},0);
+    var totVol = selected.reduce(function(s,o){return s+o.volume;},0);
+    var maxComp = selected.reduce(function(m,o){return Math.max(m, competencyRank[o.comp]);}, 0);
+    var compName = Object.keys(competencyRank).find(function(k){ return competencyRank[k]===maxComp; });
+
+    var dispatchDate = document.getElementById('dateFrom').value;
+    var bookedVehicles = {};
+    var bookedDrivers  = {};
+    dispatches.filter(function(d){return d.date===dispatchDate;}).forEach(function(d){
+        bookedVehicles[d.vehicle] = true;
+        bookedDrivers[d.driver]  = true;
+    });
+
+    var vehicle = vehicles.find(function(v){
+        return v.avail && v.maxW >= totWt && v.maxV >= totVol &&
+               v.maxD >= selected.length && competencyRank[v.comp] >= maxComp &&
+               !bookedVehicles[v.id];
+    });
+    if (!vehicle) { toast('No available vehicle covers ' + fmt(totWt) + 'kg, ' + fmt(totVol,1) + 'm\u00b3, ' + selected.length + ' drops, competency ' + compName + '.', 'error'); return; }
+
+    var driver = drivers.find(function(d){
+        return d.avail && competencyRank[d.comp] >= maxComp && !bookedDrivers[d.id];
+    });
+    if (!driver) { toast('No available driver with competency ' + compName + '.', 'error'); return; }
+
+    var legs = selected.slice().sort(function(a,b){
+        return a.twFrom.localeCompare(b.twFrom) || a.zip.localeCompare(b.zip);
+    });
+    var clockMin = 8*60;
+    var sequenced = legs.map(function(o, i) {
+        clockMin += 30 + i*15;
+        return {
+            seq: i+1, loadId:o.loadId, cust:o.cust, suburb:o.suburb,
+            arrival: minToHm(Math.min(clockMin, 23*60)),
+            twFrom:o.twFrom, twTo:o.twTo, weight:o.weight, volume:o.volume
+        };
+    });
+
+    var newId = 'DISP-' + (2000 + dispatches.length + 1);
+    var disp = {
+        id: newId, date: dispatchDate, depart: '08:00',
+        vehicle: vehicle.id, driver: driver.id,
+        status: 'Allocated', drops: selected.length,
+        weight: totWt, volume: totVol, origin: document.getElementById('origin').value,
+        legs: sequenced
+    };
+    dispatches.push(disp);
+
+    pendingOrders = pendingOrders.filter(function(o){ return !o.selected; });
+
+    toast(newId + ' created \u2014 ' + vehicle.id + ' / ' + driver.id + ' \u00b7 ' + selected.length + ' drops \u00b7 ' + fmt(totWt) + 'kg', 'success');
+    if (bizMode === 'NZ-INTEGRATED') {
+        toast('Production schedule updated \u2014 ' + selected.length + ' load(s) pushed upstream to Road Science batching plant.', 'info');
+    } else if (bizMode === 'AU-SUPPLIER') {
+        toast('Inventory reserved at origin plant for ' + selected.length + ' load(s).', 'info');
+    }
+
+    renderPending();
+    renderKpis();
+    switchTab('schedule');
+    selectedDispatch = disp;
+    renderDispatches();
+    renderLegs();
+}
+
+function advanceDispatch(d) {
+    var flow = ['Pending','Planned','Allocated','Dispatched','Completed'];
+    var i = flow.indexOf(d.status);
+    if (i < 0 || i === flow.length-1) return;
+    d.status = flow[i+1];
+    toast(d.id + ' \u2192 ' + d.status, 'success');
+    renderDispatches();
+    if (selectedDispatch && selectedDispatch.id === d.id) renderLegs();
+}
+
+function openDispatch(d) {
+    document.getElementById('dlgTitle').textContent = 'Dispatch ' + d.id;
+    document.getElementById('dlgBody').innerHTML =
+        '<dt>Date</dt><dd>' + d.date + '</dd>' +
+        '<dt>Departure</dt><dd>' + d.depart + '</dd>' +
+        '<dt>Origin</dt><dd>' + d.origin + '</dd>' +
+        '<dt>Vehicle</dt><dd>' + d.vehicle + '</dd>' +
+        '<dt>Driver</dt><dd>' + d.driver + '</dd>' +
+        '<dt>Status</dt><dd><span class="pill ' + d.status.toLowerCase() + '">' + d.status + '</span></dd>' +
+        '<dt>Drops</dt><dd>' + d.drops + '</dd>' +
+        '<dt>Weight</dt><dd>' + fmt(d.weight) + ' kg</dd>' +
+        '<dt>Volume</dt><dd>' + fmt(d.volume,1) + ' m\u00b3</dd>';
+    document.getElementById('dispatchDialog').classList.add('open');
+}
+function closeDialog() { document.getElementById('dispatchDialog').classList.remove('open'); }
+
+function switchTab(name) {
+    document.querySelectorAll('.tab').forEach(function(t){ t.classList.toggle('active', t.dataset.tab === name); });
+    document.querySelectorAll('.tab-panel').forEach(function(p){ p.classList.toggle('active', p.id === 'panel-'+name); });
+}
+
+document.addEventListener('click', function(e) {
+    var hd = e.target.closest('.fasttab-header');
+    if (hd) hd.parentElement.classList.toggle('collapsed');
+});
+
+document.querySelectorAll('.tab').forEach(function(t){
+    t.addEventListener('click', function(){ switchTab(t.dataset.tab); });
+});
+
+document.getElementById('btnOptimize').addEventListener('click', optimizeAndAllocate);
+document.getElementById('btnRefresh').addEventListener('click', function(){
+    renderPending(); renderDispatches(); renderFleet(); renderKpis(); toast('Refreshed.', 'info');
+});
+document.getElementById('btnSelectAll').addEventListener('click', function(){
+    pendingOrders.forEach(function(o){ o.selected = true; });
+    renderPending(); renderKpis();
+});
+document.getElementById('btnClear').addEventListener('click', function(){
+    pendingOrders.forEach(function(o){ o.selected = false; });
+    renderPending(); renderKpis();
+});
+document.getElementById('chkAll').addEventListener('change', function(e){
+    pendingOrders.forEach(function(o){ o.selected = e.target.checked; });
+    renderPending(); renderKpis();
+});
+
+document.getElementById('btnAddVehicle').addEventListener('click', function(){
+    var id = prompt('New vehicle ID?', 'BT-' + String(vehicles.length+1).padStart(2,'0'));
+    if (!id) return;
+    vehicles.push({ id:id, desc:'New bitumen tanker', type:'Tanker', maxW:20000, maxV:20.0, maxD:2, comp:'Tanker', home:'ROSE-01', avail:true });
+    renderFleet(); renderKpis(); toast('Vehicle ' + id + ' created.', 'success');
+});
+document.getElementById('btnAddDriver').addEventListener('click', function(){
+    var id = prompt('New driver ID?', 'DR-' + String(drivers.length+1).padStart(2,'0'));
+    if (!id) return;
+    var name = prompt('Driver name?', 'New Driver');
+    drivers.push({ id:id, name:name||'New Driver', comp:'Tanker', shift:'05:00-17:00', maxH:12, avail:true });
+    renderFleet(); renderKpis(); toast('Driver ' + id + ' created.', 'success');
+});
+
+document.getElementById('bizMode').addEventListener('change', function(e){
+    bizMode = e.target.value;
+    renderPending();
+    var label = bizMode === 'AU-CARRIER' ? 'AU Carrier (freight-only)' :
+                bizMode === 'AU-SUPPLIER' ? 'AU Supplier / Reseller' :
+                                            'NZ Road Science (integrated)';
+    toast('Business mode: ' + label, 'info');
+});
+
+['dateFrom','dateTo','origin'].forEach(function(id){    document.getElementById(id).addEventListener('change', function(){
+        var f = new Date(document.getElementById('dateFrom').value);
+        var t = new Date(document.getElementById('dateTo').value);
+        var diff = (t - f) / (1000*60*60*24);
+        if (diff > 2) {
+            document.getElementById('dateTo').value = iso(addDays(f, 2));
+            toast('Planning window capped at 3 days.', 'warning');
+        }
+        if (diff < 0) {
+            document.getElementById('dateTo').value = document.getElementById('dateFrom').value;
+        }
+        renderPending(); renderDispatches(); renderKpis();
+    });
+});
+
+document.getElementById('dateFrom').value = iso(today);
+document.getElementById('dateTo').value   = iso(addDays(today, 2));
+renderPending();
+renderDispatches();
+renderFleet();
+renderKpis();
+toast('Transport Dispatch Workbench ready \u2014 Downer Group Australia.', 'success');
+</script>
+</body>
+</html>

@@ -1,0 +1,76 @@
+<?xml version="1.0" encoding="utf-8"?>
+<AxTable xmlns:i="http://www.w3.org/2001/XMLSchema-instance">
+	<Name>DispDriverTable</Name>
+	<SourceCode>
+		<Methods>
+			<Method>
+				<Name>classDeclaration</Name>
+				<Source><![CDATA[
+public class DispDriverTable extends common
+{
+}
+]]></Source>
+			</Method>
+			<Method>
+				<Name>find</Name>
+				<Source><![CDATA[
+public static DispDriverTable find(DispDriverId _driverId, boolean _forUpdate = false)
+{
+    DispDriverTable driver;
+    driver.selectForUpdate(_forUpdate);
+    select firstonly driver
+        where driver.DriverId == _driverId;
+    return driver;
+}
+]]></Source>
+			</Method>
+		</Methods>
+	</SourceCode>
+	<Label>@DispatchWB:DriverTable</Label>
+	<TitleField1>DriverId</TitleField1>
+	<TitleField2>Name</TitleField2>
+	<ClusteredIndex>DriverIdx</ClusteredIndex>
+	<PrimaryIndex>DriverIdx</PrimaryIndex>
+	<Fields>
+		<AxTableField xmlns:i="http://www.w3.org/2001/XMLSchema-instance" i:type="AxTableFieldString">
+			<Name>DriverId</Name>
+			<ExtendedDataType>DispDriverId</ExtendedDataType>
+			<Mandatory>Yes</Mandatory>
+		</AxTableField>
+		<AxTableField xmlns:i="http://www.w3.org/2001/XMLSchema-instance" i:type="AxTableFieldString">
+			<Name>Name</Name>
+			<ExtendedDataType>Name</ExtendedDataType>
+		</AxTableField>
+		<AxTableField xmlns:i="http://www.w3.org/2001/XMLSchema-instance" i:type="AxTableFieldEnum">
+			<Name>Competency</Name>
+			<EnumType>DispDriverCompetency</EnumType>
+		</AxTableField>
+		<AxTableField xmlns:i="http://www.w3.org/2001/XMLSchema-instance" i:type="AxTableFieldTime">
+			<Name>ShiftStart</Name>
+			<Label>@DispatchWB:ShiftStart</Label>
+		</AxTableField>
+		<AxTableField xmlns:i="http://www.w3.org/2001/XMLSchema-instance" i:type="AxTableFieldTime">
+			<Name>ShiftEnd</Name>
+			<Label>@DispatchWB:ShiftEnd</Label>
+		</AxTableField>
+		<AxTableField xmlns:i="http://www.w3.org/2001/XMLSchema-instance" i:type="AxTableFieldInt">
+			<Name>MaxDailyHours</Name>
+			<Label>@DispatchWB:MaxDailyHours</Label>
+		</AxTableField>
+		<AxTableField xmlns:i="http://www.w3.org/2001/XMLSchema-instance" i:type="AxTableFieldEnum">
+			<Name>Available</Name>
+			<EnumType>NoYes</EnumType>
+		</AxTableField>
+	</Fields>
+	<Indexes>
+		<AxTableIndex>
+			<Name>DriverIdx</Name>
+			<AllowDuplicates>No</AllowDuplicates>
+			<Fields>
+				<AxTableIndexField>
+					<DataField>DriverId</DataField>
+				</AxTableIndexField>
+			</Fields>
+		</AxTableIndex>
+	</Indexes>
+</AxTable>
