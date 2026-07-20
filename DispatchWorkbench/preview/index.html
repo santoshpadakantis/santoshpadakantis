@@ -168,6 +168,13 @@
     .trip.delivered  { background:#767676; }
     .leg-remove { color:#a4262c; background:none; border:none; cursor:pointer; font:inherit; padding:0; text-decoration:underline; }
     .leg-remove:hover { color:#8a1c22; }
+    /* Sortable grid headers */
+    .grid th.sortable { cursor:pointer; user-select:none; }
+    .grid th.sortable:hover { background:var(--d365-selected); }
+    .grid th.sortable .sort-ind { display:inline-block; width:10px; margin-left:4px; color:var(--d365-text-sec); opacity:0.4; font-size:9px; }
+    .grid th.sorted-asc  .sort-ind::before { content:'\25B2'; opacity:1; color:var(--d365-blue); }
+    .grid th.sorted-desc .sort-ind::before { content:'\25BC'; opacity:1; color:var(--d365-blue); }
+    .grid th.sorted-asc, .grid th.sorted-desc { background:var(--d365-selected); }
     /* Dialog */
     .backdrop { position:fixed; inset:0; background:rgba(0,0,0,0.4); display:none; align-items:center; justify-content:center; z-index:200; }
     .backdrop.open { display:flex; }
@@ -299,17 +306,17 @@
                         <thead>
                             <tr>
                                 <th style="width:32px"><input type="checkbox" id="chkAll"></th>
-                                <th>Load ID</th>
-                                <th id="th-ref">Customer PO</th>
-                                <th>Customer</th>
-                                <th>Ship date</th>
-                                <th>Suburb</th>
-                                <th>State</th>
-                                <th>Postcode</th>
-                                <th>Time window</th>
-                                <th class="num">Weight (kg)</th>
-                                <th class="num">Volume (m&sup3;)</th>
-                                <th>Competency</th>
+                                <th class="sortable" data-sort="loadId"><span class="hdr-lbl">Load ID</span><span class="sort-ind"></span></th>
+                                <th class="sortable" data-sort="custPO" id="th-ref"><span class="hdr-lbl">Customer PO</span><span class="sort-ind"></span></th>
+                                <th class="sortable" data-sort="cust"><span class="hdr-lbl">Customer</span><span class="sort-ind"></span></th>
+                                <th class="sortable" data-sort="ship"><span class="hdr-lbl">Ship date</span><span class="sort-ind"></span></th>
+                                <th class="sortable" data-sort="suburb"><span class="hdr-lbl">Suburb</span><span class="sort-ind"></span></th>
+                                <th class="sortable" data-sort="state"><span class="hdr-lbl">State</span><span class="sort-ind"></span></th>
+                                <th class="sortable" data-sort="zip"><span class="hdr-lbl">Postcode</span><span class="sort-ind"></span></th>
+                                <th class="sortable" data-sort="twFrom"><span class="hdr-lbl">Time window</span><span class="sort-ind"></span></th>
+                                <th class="sortable num" data-sort="weight"><span class="hdr-lbl">Weight (kg)</span><span class="sort-ind"></span></th>
+                                <th class="sortable num" data-sort="volume"><span class="hdr-lbl">Volume (m&sup3;)</span><span class="sort-ind"></span></th>
+                                <th class="sortable" data-sort="comp"><span class="hdr-lbl">Competency</span><span class="sort-ind"></span></th>
                             </tr>
                         </thead>
                         <tbody></tbody>
@@ -388,7 +395,7 @@
                                 <th>Time window</th>
                                 <th class="num">Weight (kg)</th>
                                 <th class="num">Volume (m&sup3;)</th>
-                                <th style="width:88px">Actions</th>
+                                <th style="width:150px">Actions</th>
                             </tr>
                         </thead>
                         <tbody><tr><td colspan="9" class="muted" style="text-align:center;padding:16px">Select a dispatch to view drops</td></tr></tbody>
@@ -551,6 +558,25 @@
         <div class="dialog-ft">
             <button class="ap-btn" onclick="closeDialog()">Close</button>
             <button class="ap-btn primary" onclick="closeDialog()">OK</button>
+        </div>
+    </div>
+</div>
+
+<div class="backdrop" id="moveDialog">
+    <div class="dialog" style="width:460px">
+        <div class="dialog-hd">
+            <h3 id="moveTitle">Move load to dispatch</h3>
+            <span class="x" onclick="closeMoveDialog()">&times;</span>
+        </div>
+        <div class="dialog-body">
+            <div id="moveContext" style="margin-bottom:12px"></div>
+            <label class="strong" style="display:block;margin-bottom:6px">Target dispatch</label>
+            <select id="moveTarget" class="ap-select" style="width:100%"></select>
+            <div class="muted" style="font-size:12px;margin-top:6px">Only dispatches on the same date are listed.</div>
+        </div>
+        <div class="dialog-ft">
+            <button class="ap-btn" onclick="closeMoveDialog()">Cancel</button>
+            <button class="ap-btn primary" id="btnMoveConfirm">Move</button>
         </div>
     </div>
 </div>
@@ -805,7 +831,29 @@ function renderPending() {
     var refHeader = bizMode === 'NZ-INTEGRATED' ? 'Production order' :
                     bizMode === 'AU-SUPPLIER'   ? 'Sales / PO ref'   :
                                                   'Customer PO';
-    document.getElementById('th-ref').textContent = refHeader;
+    var thRef  = document.getElementById('th-ref');
+    var refLbl = thRef ? thRef.querySelector('.hdr-lbl') : null;
+    if (refLbl) refLbl.textContent = refHeader;
+
+    // Apply sort
+    if (pendingSort.key) {
+        var k = pendingSort.key;
+        var dir = pendingSort.dir === 'desc' ? -1 : 1;
+        rows.sort(function(a, b) {
+            var va = a[k], vb = b[k];
+            if (typeof va === 'number' && typeof vb === 'number') return (va - vb) * dir;
+            var sa = String(va == null ? '' : va).toLowerCase();
+            var sb = String(vb == null ? '' : vb).toLowerCase();
+            return sa < sb ? -1 * dir : sa > sb ? 1 * dir : 0;
+        });
+    }
+    // Update sort indicators on the TH row
+    document.querySelectorAll('#pendingGrid th.sortable').forEach(function(th){
+        th.classList.remove('sorted-asc', 'sorted-desc');
+        if (th.dataset.sort === pendingSort.key) {
+            th.classList.add(pendingSort.dir === 'desc' ? 'sorted-desc' : 'sorted-asc');
+        }
+    });
 
     var tbody = document.querySelector('#pendingGrid tbody');
     tbody.innerHTML = '';
@@ -871,7 +919,8 @@ function renderDispatches() {
             '<td class="num">' + fmt(d.volume,1) + '</td>' +
             '<td>' +
                 '<button class="ap-btn" data-act="view" data-id="' + d.id + '" style="padding:2px 8px">View</button> ' +
-                '<button class="ap-btn" data-act="advance" data-id="' + d.id + '" style="padding:2px 8px">Advance</button>' +
+                '<button class="ap-btn" data-act="advance" data-id="' + d.id + '" style="padding:2px 8px">Advance</button> ' +
+                '<button class="ap-btn" data-act="delete" data-id="' + d.id + '" style="padding:2px 8px;color:#a4262c">Delete</button>' +
             '</td>';
         tr.addEventListener('click', function(){ selectedDispatch = d; renderDispatches(); renderLegs(); });
         tbody.appendChild(tr);
@@ -882,6 +931,7 @@ function renderDispatches() {
             e.stopPropagation();
             var d = dispatches.find(function(x){ return x.id === b.dataset.id; });
             if (b.dataset.act === 'view') openDispatch(d);
+            else if (b.dataset.act === 'delete') deleteDispatch(d);
             else advanceDispatch(d);
         });
     });
@@ -916,12 +966,19 @@ function renderLegs() {
             '<td>' + l.twFrom + ' - ' + l.twTo + '</td>' +
             '<td class="num">' + fmt(l.weight) + '</td>' +
             '<td class="num">' + fmt(l.volume,1) + '</td>' +
-            '<td><button class="leg-remove" data-seq="' + l.seq + '" data-load="' + l.loadId + '">Remove</button></td>';
+            '<td>' +
+                '<button class="leg-remove" data-act="remove" data-seq="' + l.seq + '" data-load="' + l.loadId + '">Remove</button>' +
+                ' <span class="muted">|</span> ' +
+                '<button class="link-btn" data-act="move" data-seq="' + l.seq + '" data-load="' + l.loadId + '">Move to\u2026</button>' +
+            '</td>';
         tbody.appendChild(tr);
     });
-    tbody.querySelectorAll('.leg-remove').forEach(function(btn){
+    tbody.querySelectorAll('button[data-act]').forEach(function(btn){
         btn.addEventListener('click', function(){
-            removeLegFromDispatch(selectedDispatch.id, Number(btn.dataset.seq), btn.dataset.load);
+            var seq = Number(btn.dataset.seq);
+            var loadId = btn.dataset.load;
+            if (btn.dataset.act === 'move') openMoveDialog(selectedDispatch.id, seq, loadId);
+            else removeLegFromDispatch(selectedDispatch.id, seq, loadId);
         });
     });
     document.getElementById('legSummary').textContent =
@@ -945,6 +1002,103 @@ function removeLegFromDispatch(dispatchId, seq, loadId) {
     } else {
         toast('Removed ' + loadId + ' from ' + dispatchId + '.', 'success');
     }
+    renderDispatches();
+    renderLegs();
+    renderKpis();
+}
+
+function deleteDispatch(d) {
+    if (!d) return;
+    if (!confirm('Delete ' + d.id + '? All ' + d.drops + ' load(s) will be returned to Loads needing dispatch.')) return;
+    var returned = 0;
+    (d.legs || []).forEach(function(l){
+        pendingOrders.push({
+            dir: l.dir || 'OUT',
+            loadId: l.loadId,
+            custPO: l.custPO || '',
+            prodOrder: l.prodOrder || '',
+            cust: l.cust || '',
+            custCode: l.custCode || '',
+            ship: l.ship || d.date,
+            suburb: l.suburb || '',
+            state: l.state || '',
+            zip: l.zip || '',
+            twFrom: l.twFrom || '08:00',
+            twTo: l.twTo || '17:00',
+            weight: l.weight || 0,
+            volume: l.volume || 0,
+            comp: l.comp || 'Standard',
+            selected: false
+        });
+        returned++;
+    });
+    var idx = dispatches.indexOf(d);
+    if (idx >= 0) dispatches.splice(idx, 1);
+    if (selectedDispatch && selectedDispatch.id === d.id) selectedDispatch = null;
+    toast(d.id + ' deleted \u00b7 ' + returned + ' load(s) returned to pending.', 'warning');
+    renderPending(); renderDispatches(); renderLegs(); renderKpis();
+}
+
+function openMoveDialog(sourceId, seq, loadId) {
+    var source = dispatches.find(function(x){ return x.id === sourceId; });
+    if (!source) return;
+    var leg = source.legs.find(function(l){ return l.seq === seq; });
+    if (!leg) return;
+    var candidates = dispatches.filter(function(d){ return d.id !== sourceId && d.date === source.date; });
+    var sel = document.getElementById('moveTarget');
+    sel.innerHTML = '';
+    if (!candidates.length) {
+        var opt = document.createElement('option');
+        opt.value = '';
+        opt.textContent = 'No other dispatch on ' + source.date;
+        sel.appendChild(opt);
+    } else {
+        candidates.forEach(function(d){
+            var opt = document.createElement('option');
+            opt.value = d.id;
+            opt.textContent = d.id + '  \u00b7  ' + d.vehicle + '/' + d.driver + '  \u00b7  ' + d.drops + ' drops  \u00b7  ' + fmt(d.weight) + ' kg';
+            sel.appendChild(opt);
+        });
+    }
+    document.getElementById('moveTitle').textContent = 'Move ' + loadId + ' from ' + sourceId;
+    document.getElementById('moveContext').innerHTML =
+        '<div class="muted" style="font-size:12px">Load: <b>' + loadId + '</b> \u00b7 ' + (leg.cust || '') + '<br>' +
+        'Weight: ' + fmt(leg.weight) + ' kg \u00b7 Volume: ' + fmt(leg.volume,1) + ' m\u00b3</div>';
+    var confirmBtn = document.getElementById('btnMoveConfirm');
+    confirmBtn.disabled = !candidates.length;
+    confirmBtn.onclick = function(){
+        var targetId = sel.value;
+        if (!targetId) return;
+        moveLegToDispatch(sourceId, seq, targetId);
+        closeMoveDialog();
+    };
+    document.getElementById('moveDialog').classList.add('open');
+}
+
+function closeMoveDialog() { document.getElementById('moveDialog').classList.remove('open'); }
+
+function moveLegToDispatch(sourceId, seq, targetId) {
+    var source = dispatches.find(function(x){ return x.id === sourceId; });
+    var target = dispatches.find(function(x){ return x.id === targetId; });
+    if (!source || !target) return;
+    var idx = source.legs.findIndex(function(l){ return l.seq === seq; });
+    if (idx < 0) return;
+    var leg = source.legs.splice(idx, 1)[0];
+    target.legs.push(leg);
+    source.legs.forEach(function(l,i){ l.seq = i + 1; });
+    target.legs.forEach(function(l,i){ l.seq = i + 1; });
+    source.drops  = source.legs.length;
+    source.weight = source.legs.reduce(function(s,l){ return s + (l.weight || 0); }, 0);
+    source.volume = source.legs.reduce(function(s,l){ return s + (l.volume || 0); }, 0);
+    target.drops  = target.legs.length;
+    target.weight = target.legs.reduce(function(s,l){ return s + (l.weight || 0); }, 0);
+    target.volume = target.legs.reduce(function(s,l){ return s + (l.volume || 0); }, 0);
+    if (source.legs.length === 0) {
+        var si = dispatches.indexOf(source);
+        if (si >= 0) dispatches.splice(si, 1);
+        if (selectedDispatch && selectedDispatch.id === sourceId) selectedDispatch = target;
+    }
+    toast('Moved ' + leg.loadId + ' \u2192 ' + targetId + '.', 'success');
     renderDispatches();
     renderLegs();
     renderKpis();
@@ -1259,7 +1413,10 @@ function optimizeAndAllocate() {
         return {
             seq: i+1, loadId:o.loadId, cust:o.cust, suburb:o.suburb,
             arrival: minToHm(Math.min(clockMin, 23*60)),
-            twFrom:o.twFrom, twTo:o.twTo, weight:o.weight, volume:o.volume
+            twFrom:o.twFrom, twTo:o.twTo, weight:o.weight, volume:o.volume,
+            // Preserve source order fields so this leg can be moved or returned to pending
+            dir:o.dir, custPO:o.custPO, prodOrder:o.prodOrder, custCode:o.custCode,
+            ship:o.ship, state:o.state, zip:o.zip, comp:o.comp
         };
     });
 
@@ -1407,6 +1564,22 @@ document.getElementById('bizMode').addEventListener('change', function(e){
 
 document.getElementById('dateFrom').value = iso(today);
 document.getElementById('dateTo').value   = iso(addDays(today, 2));
+
+// Sortable columns on Loads needing dispatch
+var pendingSort = { key:null, dir:'asc' };
+document.querySelectorAll('#pendingGrid th.sortable').forEach(function(th){
+    th.addEventListener('click', function(){
+        var k = th.dataset.sort;
+        if (pendingSort.key === k) {
+            pendingSort.dir = pendingSort.dir === 'asc' ? 'desc' : 'asc';
+        } else {
+            pendingSort.key = k;
+            pendingSort.dir = 'asc';
+        }
+        renderPending();
+    });
+});
+
 renderPending();
 renderDispatches();
 renderFleet();
