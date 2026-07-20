@@ -131,18 +131,43 @@
     .msg .body { flex:1; font-size:13px; }
     .msg .close { cursor:pointer; color:var(--d365-text-sec); }
     @keyframes slideIn { from { transform:translateX(20px); opacity:0; } to { transform:translateX(0); opacity:1; } }
-    /* Schedule */
-    .schedule { display:grid; border:1px solid var(--d365-border-dk); background:var(--d365-surface); }
-    .sched-cell-hd { background:var(--d365-hover); border-bottom:1px solid var(--d365-border-dk); border-right:1px solid var(--d365-border); padding:8px 10px; font-weight:600; }
-    .sched-label { border-bottom:1px solid var(--d365-border); border-right:1px solid var(--d365-border); padding:10px; font-weight:600; }
-    .sched-label small { display:block; color:var(--d365-text-sec); font-weight:400; font-size:11px; }
-    .sched-track { position:relative; height:44px; border-bottom:1px solid var(--d365-border); border-right:1px solid var(--d365-border); background: repeating-linear-gradient(to right, transparent 0 calc(100%/24 - 1px), var(--d365-border) calc(100%/24 - 1px) calc(100%/24)); }
-    .trip { position:absolute; top:6px; height:32px; background:var(--d365-blue); color:#fff; font-size:11px; font-weight:600; border-radius:3px; display:flex; align-items:center; padding:0 8px; cursor:pointer; box-shadow:0 1px 3px rgba(0,0,0,0.15); transition:transform 0.1s; overflow:hidden; }
-    .trip:hover { transform:translateY(-1px); box-shadow:0 2px 6px rgba(0,0,0,0.2); }
+    /* Schedule / Gantt */
+    .gantt-toolbar { display:flex; align-items:center; gap:14px; padding:8px 12px; background:var(--d365-hover); border:1px solid var(--d365-border-dk); border-bottom:none; font-size:12px; color:var(--d365-text-sec); flex-wrap:wrap; }
+    .gantt-toolbar .lg-item   { display:inline-flex; align-items:center; gap:6px; }
+    .gantt-toolbar .lg-swatch { width:14px; height:10px; border-radius:2px; display:inline-block; }
+    .gantt-toolbar .lg-swatch.planned    { background:#106ebe; }
+    .gantt-toolbar .lg-swatch.allocated  { background:#107c10; }
+    .gantt-toolbar .lg-swatch.intransit  { background:#5c2d91; }
+    .gantt-toolbar .lg-swatch.delivered  { background:#767676; }
+    .gantt-toolbar .lg-hint   { margin-left:auto; font-style:italic; }
+    .gantt-scroll { overflow-x:auto; overflow-y:hidden; border:1px solid var(--d365-border-dk); background:var(--d365-surface); }
+    .schedule { display:grid; background:var(--d365-surface); }
+    .sched-cell-hd { background:var(--d365-hover); border-bottom:1px solid var(--d365-border-dk); border-right:1px solid var(--d365-border); padding:8px 10px; font-weight:600; font-size:12px; text-align:center; position:sticky; left:0; z-index:3; }
+    .sched-day { display:flex; flex-direction:column; border-right:1px solid var(--d365-border); background:var(--d365-hover); border-bottom:1px solid var(--d365-border-dk); }
+    .sched-day .day-label { padding:6px 10px 2px; font-weight:600; font-size:12px; text-align:center; }
+    .sched-day .day-hours { display:grid; grid-template-columns:repeat(9,1fr); font-size:10px; color:var(--d365-text-sec); }
+    .sched-day .day-hours span { padding:2px 0 6px; text-align:center; border-right:1px dashed var(--d365-border); }
+    .sched-day .day-hours span:last-child { border-right:none; }
+    .sched-label { border-bottom:1px solid var(--d365-border); border-right:1px solid var(--d365-border); padding:8px 10px; font-weight:600; font-size:13px; display:flex; flex-direction:column; justify-content:center; background:var(--d365-surface); position:sticky; left:0; z-index:2; box-shadow:1px 0 0 var(--d365-border); }
+    .sched-label.zebra { background:#fafafa; }
+    .sched-label small { display:block; color:var(--d365-text-sec); font-weight:400; font-size:11px; margin-top:2px; white-space:nowrap; overflow:hidden; text-overflow:ellipsis; }
+    .sched-track { position:relative; height:56px; border-bottom:1px solid var(--d365-border); border-right:1px solid var(--d365-border); background:
+        repeating-linear-gradient(to right,
+            transparent 0 calc(100%/8 - 1px),
+            var(--d365-border) calc(100%/8 - 1px) calc(100%/8));
+    }
+    .sched-track.zebra { background-color:#fafafa; }
+    .trip { position:absolute; top:6px; height:44px; background:var(--d365-blue); color:#fff; font-size:11px; font-weight:600; border-radius:4px; display:flex; flex-direction:column; justify-content:center; padding:2px 8px; cursor:pointer; box-shadow:0 1px 3px rgba(0,0,0,0.15); transition:transform 0.1s, box-shadow 0.1s; overflow:hidden; min-width:56px; line-height:1.15; }
+    .trip small { font-weight:400; opacity:0.92; font-size:10px; margin-top:2px; white-space:nowrap; overflow:hidden; text-overflow:ellipsis; }
+    .trip:hover { transform:translateY(-1px); box-shadow:0 3px 8px rgba(0,0,0,0.28); z-index:6; }
     .trip.planned    { background:#106ebe; }
     .trip.allocated  { background:#107c10; }
     .trip.dispatched { background:#5c2d91; }
+    .trip.intransit  { background:#5c2d91; }
     .trip.completed  { background:#767676; }
+    .trip.delivered  { background:#767676; }
+    .leg-remove { color:#a4262c; background:none; border:none; cursor:pointer; font:inherit; padding:0; text-decoration:underline; }
+    .leg-remove:hover { color:#8a1c22; }
     /* Dialog */
     .backdrop { position:fixed; inset:0; background:rgba(0,0,0,0.4); display:none; align-items:center; justify-content:center; z-index:200; }
     .backdrop.open { display:flex; }
@@ -301,8 +326,17 @@
                 <div class="title">Fleet schedule &mdash; Gantt view</div>
                 <div class="summary" id="ganttSummary">0 trips scheduled</div>
             </div>
-            <div class="fasttab-body">
-                <div id="ganttContainer"></div>
+            <div class="fasttab-body" style="padding:0">
+                <div class="gantt-toolbar">
+                    <span class="lg-item"><span class="lg-swatch planned"></span> Planned</span>
+                    <span class="lg-item"><span class="lg-swatch allocated"></span> Allocated</span>
+                    <span class="lg-item"><span class="lg-swatch intransit"></span> In transit</span>
+                    <span class="lg-item"><span class="lg-swatch delivered"></span> Delivered</span>
+                    <span class="lg-hint">Click a chip to open dispatch details &middot; hours shown 04:00&ndash;20:00</span>
+                </div>
+                <div class="gantt-scroll">
+                    <div id="ganttContainer"></div>
+                </div>
             </div>
         </div>
 
@@ -354,9 +388,10 @@
                                 <th>Time window</th>
                                 <th class="num">Weight (kg)</th>
                                 <th class="num">Volume (m&sup3;)</th>
+                                <th style="width:88px">Actions</th>
                             </tr>
                         </thead>
-                        <tbody><tr><td colspan="8" class="muted" style="text-align:center;padding:16px">Select a dispatch to view drops</td></tr></tbody>
+                        <tbody><tr><td colspan="9" class="muted" style="text-align:center;padding:16px">Select a dispatch to view drops</td></tr></tbody>
                     </table>
                 </div>
             </div>
@@ -860,8 +895,13 @@ function renderDispatches() {
 function renderLegs() {
     var tbody = document.querySelector('#legGrid tbody');
     if (!selectedDispatch) {
-        tbody.innerHTML = '<tr><td colspan="8" class="muted" style="text-align:center;padding:16px">Select a dispatch to view drops</td></tr>';
+        tbody.innerHTML = '<tr><td colspan="9" class="muted" style="text-align:center;padding:16px">Select a dispatch to view drops</td></tr>';
         document.getElementById('legSummary').textContent = 'Select a dispatch to view drops';
+        return;
+    }
+    if (!selectedDispatch.legs.length) {
+        tbody.innerHTML = '<tr><td colspan="9" class="muted" style="text-align:center;padding:16px">All loads removed from ' + selectedDispatch.id + '.</td></tr>';
+        document.getElementById('legSummary').textContent = selectedDispatch.id + ' \u00b7 0 drops';
         return;
     }
     tbody.innerHTML = '';
@@ -875,11 +915,39 @@ function renderLegs() {
             '<td>' + l.arrival + '</td>' +
             '<td>' + l.twFrom + ' - ' + l.twTo + '</td>' +
             '<td class="num">' + fmt(l.weight) + '</td>' +
-            '<td class="num">' + fmt(l.volume,1) + '</td>';
+            '<td class="num">' + fmt(l.volume,1) + '</td>' +
+            '<td><button class="leg-remove" data-seq="' + l.seq + '" data-load="' + l.loadId + '">Remove</button></td>';
         tbody.appendChild(tr);
+    });
+    tbody.querySelectorAll('.leg-remove').forEach(function(btn){
+        btn.addEventListener('click', function(){
+            removeLegFromDispatch(selectedDispatch.id, Number(btn.dataset.seq), btn.dataset.load);
+        });
     });
     document.getElementById('legSummary').textContent =
         selectedDispatch.id + ' \u00b7 ' + selectedDispatch.legs.length + ' drops';
+}
+
+function removeLegFromDispatch(dispatchId, seq, loadId) {
+    var disp = dispatches.find(function(x){ return x.id === dispatchId; });
+    if (!disp) return;
+    if (!confirm('Remove ' + loadId + ' from ' + dispatchId + '?')) return;
+    disp.legs = disp.legs.filter(function(l){ return l.seq !== seq; });
+    disp.legs.forEach(function(l, i){ l.seq = i + 1; });
+    disp.drops  = disp.legs.length;
+    disp.weight = disp.legs.reduce(function(s,l){ return s + (l.weight || 0); }, 0);
+    disp.volume = disp.legs.reduce(function(s,l){ return s + (l.volume || 0); }, 0);
+    if (disp.legs.length === 0) {
+        var idx = dispatches.indexOf(disp);
+        if (idx >= 0) dispatches.splice(idx, 1);
+        if (selectedDispatch && selectedDispatch.id === dispatchId) selectedDispatch = null;
+        toast(dispatchId + ' deleted (no remaining drops).', 'warning');
+    } else {
+        toast('Removed ' + loadId + ' from ' + dispatchId + '.', 'success');
+    }
+    renderDispatches();
+    renderLegs();
+    renderKpis();
 }
 
 function renderGantt(rows) {
@@ -889,14 +957,36 @@ function renderGantt(rows) {
     var days = [];
     for (var d = new Date(from); d <= new Date(to); d = addDays(d,1)) days.push(iso(d));
 
-    var html = '<div class="schedule" style="grid-template-columns: 180px repeat(' + days.length + ', 1fr)">';
-    html += '<div class="sched-cell-hd">Vehicle</div>';
-    days.forEach(function(dayIso){ html += '<div class="sched-cell-hd" style="text-align:center">' + dayIso + '</div>'; });
+    // Operating-hour window (04:00 - 20:00 = 16 hours, tick every 2 hours -> 9 marks)
+    var WIN_START = 4 * 60;
+    var WIN_END   = 20 * 60;
+    var WIN_WIDTH = WIN_END - WIN_START;
+    var HOUR_TICKS = ['04','06','08','10','12','14','16','18','20'];
+    var DAY_COL_W  = 340;
 
-    vehicles.forEach(function(v) {
-        html += '<div class="sched-label">' + v.id + '<small>' + v.desc + '</small></div>';
+    var gridTemplate = '200px repeat(' + days.length + ', ' + DAY_COL_W + 'px)';
+    var totalW = 200 + days.length * DAY_COL_W;
+    var html = '<div class="schedule" style="grid-template-columns:' + gridTemplate + ';min-width:' + totalW + 'px">';
+    html += '<div class="sched-cell-hd" style="text-align:left">Vehicle</div>';
+    days.forEach(function(dayIso){
+        var dt = new Date(dayIso);
+        var pretty = dt.toLocaleDateString(undefined, { weekday:'short', day:'2-digit', month:'short' });
+        html += '<div class="sched-day">'
+              +   '<div class="day-label">' + pretty + ' &middot; ' + dayIso + '</div>'
+              +   '<div class="day-hours">'
+              +     HOUR_TICKS.map(function(h){ return '<span>' + h + '</span>'; }).join('')
+              +   '</div>'
+              + '</div>';
+    });
+
+    vehicles.forEach(function(v, vi) {
+        var zebra = vi % 2 === 1 ? ' zebra' : '';
+        html += '<div class="sched-label' + zebra + '">' + v.id
+              + '<small>' + v.desc + '</small>'
+              + '<small>Home ' + v.home + ' &middot; ' + fmt(v.maxW) + ' kg &middot; ' + v.comp + '</small>'
+              + '</div>';
         days.forEach(function(dayIso) {
-            html += '<div class="sched-track" data-vh="' + v.id + '" data-day="' + dayIso + '"></div>';
+            html += '<div class="sched-track' + zebra + '" data-vh="' + v.id + '" data-day="' + dayIso + '"></div>';
         });
     });
     html += '</div>';
@@ -906,15 +996,30 @@ function renderGantt(rows) {
         var track = container.querySelector('.sched-track[data-vh="' + d.vehicle + '"][data-day="' + d.date + '"]');
         if (!track) return;
         var startMin = hmToMin(d.depart);
-        var endMin   = Math.min(24*60, startMin + Math.max(60, d.drops * 45 + 60));
-        var leftPct  = (startMin / (24*60)) * 100;
-        var widthPct = ((endMin - startMin) / (24*60)) * 100;
+        var endMin   = startMin + Math.max(60, d.drops * 45 + 60);
+        // Clamp to visible operating window
+        var visStart = Math.max(WIN_START, startMin);
+        var visEnd   = Math.min(WIN_END,   endMin);
+        if (visEnd <= visStart) return;
+        var leftPct  = ((visStart - WIN_START) / WIN_WIDTH) * 100;
+        var widthPct = ((visEnd   - visStart)  / WIN_WIDTH) * 100;
+        var statusCls = (d.status || '').toLowerCase();
+        var driverObj = drivers.find(function(x){ return x.id === d.driver; });
+        var driverName = driverObj ? driverObj.name : d.driver;
         var chip = document.createElement('div');
-        chip.className = 'trip ' + d.status.toLowerCase();
+        chip.className = 'trip ' + statusCls;
         chip.style.left  = leftPct + '%';
         chip.style.width = widthPct + '%';
-        chip.textContent = d.id + ' \u00b7 ' + d.drops + ' drops';
-        chip.title = d.id + ' - ' + d.driver + ' - ' + d.depart;
+        chip.innerHTML =
+            '<span>' + d.id + ' \u00b7 ' + d.drops + ' drops</span>'
+          + '<small>' + d.depart + '\u2013' + minToHm(Math.min(24*60-1, endMin)) + ' \u00b7 ' + driverName + '</small>';
+        chip.title = d.id + '\n' + d.status
+                    + '\nVehicle: ' + d.vehicle
+                    + '\nDriver:  ' + driverName
+                    + '\nDepart:  ' + d.depart
+                    + '\nDrops:   ' + d.drops
+                    + '\nWeight:  ' + fmt(d.weight) + ' kg'
+                    + '\nVolume:  ' + fmt(d.volume,1) + ' m\u00b3';
         chip.addEventListener('click', function(){ openDispatch(d); });
         track.appendChild(chip);
     });
