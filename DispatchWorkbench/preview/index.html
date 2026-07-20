@@ -198,7 +198,7 @@
     </button>
     <button class="ap-btn" id="btnInbound" data-dir="IN">
         <svg viewBox="0 0 16 16"><path d="M15 8H4l3-3-1-1-5 4 5 4 1-1-3-3h11z"/></svg>
-        Inbound dispatch
+        Inbound orders
     </button>
     <div class="ap-sep"></div>
     <button class="ap-btn" id="btnRefresh">
@@ -1221,7 +1221,7 @@ document.getElementById('btnCreateDispatch').addEventListener('click', function(
         document.getElementById('btnInbound').classList.toggle('active',  loadDirection === 'IN');
         pendingOrders.forEach(function(o){ o.selected = false; });
         renderPending(); renderKpis();
-        toast(loadDirection === 'IN' ? 'Showing inbound dispatch (raw bitumen ex refineries).' :
+        toast(loadDirection === 'IN' ? 'Showing inbound orders (raw bitumen ex refineries).' :
                                        'Showing outbound loads dispatch (finished bitumen to customers).', 'info');
     });
 });
