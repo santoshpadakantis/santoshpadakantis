@@ -544,7 +544,19 @@ var pendingOrders = [
     { dir:'IN',  loadId:'INB-000043', custPO:'SC-BP-77012',       prodOrder:'REC-2202',  cust:'BP Kwinana Terminal',                   ship:iso(today),            suburb:'BP Kwinana \u2192 Kwinana Bitumen Depot',       state:'WA',  zip:'6167', twFrom:'07:00', twTo:'11:00', weight:30000, volume:30.0, comp:'HAZMAT' },
     { dir:'IN',  loadId:'INB-000044', custPO:'SC-MOB-40901',      prodOrder:'REC-2203',  cust:'Mobil Altona Terminal',                 ship:iso(addDays(today,1)), suburb:'Altona \u2192 Laverton North Plant',            state:'VIC', zip:'3018', twFrom:'05:00', twTo:'09:00', weight:28000, volume:28.0, comp:'HAZMAT' },
     { dir:'IN',  loadId:'INB-000045', custPO:'SC-AMP-63321',      prodOrder:'REC-2204',  cust:'Ampol Lytton Refinery',                 ship:iso(addDays(today,1)), suburb:'Lytton \u2192 Wacol Bitumen Terminal',          state:'QLD', zip:'4178', twFrom:'06:00', twTo:'10:00', weight:34000, volume:34.0, comp:'HAZMAT' },
-    { dir:'IN',  loadId:'INB-000046', custPO:'SC-PUM-52880',      prodOrder:'REC-2205',  cust:'Puma Energy (imported cargo, Port Botany)',ship:iso(addDays(today,2)),suburb:'Port Botany \u2192 Rosehill Asphalt Plant',    state:'NSW', zip:'2019', twFrom:'08:00', twTo:'12:00', weight:32000, volume:32.0, comp:'HAZMAT' }
+    { dir:'IN',  loadId:'INB-000046', custPO:'SC-PUM-52880',      prodOrder:'REC-2205',  cust:'Puma Energy (imported cargo, Port Botany)',ship:iso(addDays(today,2)),suburb:'Port Botany \u2192 Rosehill Asphalt Plant',    state:'NSW', zip:'2019', twFrom:'08:00', twTo:'12:00', weight:32000, volume:32.0, comp:'HAZMAT' },
+    // ---- Additional outbound loads to enrich the simulation ----
+    { dir:'OUT', loadId:'BIT-000154', custPO:'PO-METRO-88301',   prodOrder:'PROD-4513', cust:'Metro Civil Pty Ltd',      custCode:'METRO',  ship:iso(today),            suburb:'Eastern Distributor - Alexandria',state:'NSW', zip:'2015', twFrom:'10:00', twTo:'13:00', weight:22000, volume:22.0, comp:'Tanker' },
+    { dir:'OUT', loadId:'BIT-000155', custPO:'PO-QSPRAY-88302',  prodOrder:'PROD-4514', cust:'QuickSeal Spray',          custCode:'QSPRAY', ship:iso(today),            suburb:'Newell Hwy - Dubbo',              state:'NSW', zip:'2830', twFrom:'12:00', twTo:'16:00', weight:20000, volume:20.0, comp:'HAZMAT' },
+    { dir:'OUT', loadId:'BIT-000156', custPO:'PO-RRC-88303',     prodOrder:'PROD-4515', cust:'Regional Roads Co',        custCode:'RRC',    ship:iso(today),            suburb:'Bruce Hwy - Rockhampton',         state:'QLD', zip:'4700', twFrom:'08:00', twTo:'12:00', weight:28000, volume:28.0, comp:'Tanker' },
+    { dir:'OUT', loadId:'BIT-000157', custPO:'PO-METRO-88304',   prodOrder:'PROD-4516', cust:'Metro Civil Pty Ltd',      custCode:'METRO',  ship:iso(addDays(today,1)), suburb:'Monash Fwy - Glen Waverley',      state:'VIC', zip:'3150', twFrom:'09:00', twTo:'12:00', weight:24000, volume:24.0, comp:'HAZMAT' },
+    { dir:'OUT', loadId:'BIT-000158', custPO:'PO-QSPRAY-88305',  prodOrder:'PROD-4517', cust:'QuickSeal Spray',          custCode:'QSPRAY', ship:iso(addDays(today,1)), suburb:'Kwinana Fwy - Rockingham',        state:'WA',  zip:'6168', twFrom:'10:00', twTo:'14:00', weight:26000, volume:26.0, comp:'HAZMAT' },
+    { dir:'OUT', loadId:'BIT-000159', custPO:'PO-RRC-88306',     prodOrder:'PROD-4518', cust:'Regional Roads Co',        custCode:'RRC',    ship:iso(addDays(today,1)), suburb:'Sturt Hwy - Wagga Wagga',         state:'NSW', zip:'2650', twFrom:'11:00', twTo:'15:00', weight:22000, volume:22.0, comp:'Tanker' },
+    { dir:'OUT', loadId:'BIT-000164', custPO:'PO-METRO-88307',   prodOrder:'PROD-4519', cust:'Metro Civil Pty Ltd',      custCode:'METRO',  ship:iso(addDays(today,2)), suburb:'Ipswich Motorway - Redbank',      state:'QLD', zip:'4301', twFrom:'09:00', twTo:'13:00', weight:20000, volume:20.0, comp:'Tanker' },
+    { dir:'OUT', loadId:'BIT-000165', custPO:'PO-QSPRAY-88308',  prodOrder:'PROD-4520', cust:'QuickSeal Spray',          custCode:'QSPRAY', ship:iso(addDays(today,2)), suburb:'Great Eastern Hwy - Midland',     state:'WA',  zip:'6056', twFrom:'12:00', twTo:'16:00', weight:26000, volume:26.0, comp:'HAZMAT' },
+    // ---- Additional inbound loads to enrich the simulation ----
+    { dir:'IN',  loadId:'INB-000047', custPO:'SC-VIVA-11295',     prodOrder:'REC-2206',  cust:'Viva Energy Australia (Geelong Refinery)',ship:iso(today),            suburb:'Geelong Refinery \u2192 Somerton Plant',        state:'VIC', zip:'3062', twFrom:'07:00', twTo:'11:00', weight:30000, volume:30.0, comp:'HAZMAT' },
+    { dir:'IN',  loadId:'INB-000048', custPO:'SC-BP-77045',       prodOrder:'REC-2207',  cust:'BP Kwinana Terminal',                    ship:iso(addDays(today,2)), suburb:'BP Kwinana \u2192 Perth Airport Depot',         state:'WA',  zip:'6105', twFrom:'08:00', twTo:'12:00', weight:32000, volume:32.0, comp:'HAZMAT' }
 ].map(function(o){ o.selected = false; return o; });
 
 var vehicles = [
@@ -555,7 +567,9 @@ var vehicles = [
     { id:'BT-05', desc:'Scania R620 + Heated Bitumen B-Double (44kL)',            type:'Articulated', maxW:44000, maxV:44.0, maxD:3, comp:'HAZMAT', home:'TERM', avail:true  },
     { id:'BT-06', desc:'Freightliner Argosy + Emulsion Sprayer Truck (10kL)',     type:'Tanker',      maxW:10000, maxV:10.0, maxD:4, comp:'Tanker', home:'DEPO', avail:true  },
     { id:'BT-07', desc:'Hino 700 + Cutback Bitumen Rigid Tanker (12kL)',          type:'Tanker',      maxW:12000, maxV:12.0, maxD:3, comp:'HAZMAT', home:'TERM', avail:false },
-    { id:'BT-08', desc:'Western Star 4800 + PMB Heated Tanker (32kL)',            type:'Tanker',      maxW:32000, maxV:32.0, maxD:2, comp:'HAZMAT', home:'TERM', avail:true  }
+    { id:'BT-08', desc:'Western Star 4800 + PMB Heated Tanker (32kL)',            type:'Tanker',      maxW:32000, maxV:32.0, maxD:2, comp:'HAZMAT', home:'TERM', avail:true  },
+    { id:'BT-09', desc:'MAN TGX + Insulated Bitumen Tri-axle Tanker (30kL)',      type:'Tanker',      maxW:30000, maxV:30.0, maxD:3, comp:'Tanker', home:'ROSE', avail:true  },
+    { id:'BT-10', desc:'DAF XG+ + Heated Bitumen Semi-trailer (32kL)',            type:'Tanker',      maxW:32000, maxV:32.0, maxD:2, comp:'Tanker', home:'DEPO', avail:true  }
 ];
 
 var drivers = [
@@ -566,7 +580,9 @@ var drivers = [
     { id:'DR-05', name:'Ethan Williams',     comp:'HAZMAT',       shift:'06:00-18:00', maxH:12, avail:true  },
     { id:'DR-06', name:'Noah Papadopoulos',  comp:'HAZMAT',       shift:'05:00-17:00', maxH:12, avail:true  },
     { id:'DR-07', name:'Ava Wiradjuri',      comp:'Tanker',       shift:'07:00-19:00', maxH:12, avail:true  },
-    { id:'DR-08', name:'Rajesh Kumar',       comp:'HAZMAT',       shift:'04:00-16:00', maxH:12, avail:false }
+    { id:'DR-08', name:'Rajesh Kumar',       comp:'HAZMAT',       shift:'04:00-16:00', maxH:12, avail:false },
+    { id:'DR-09', name:'Sofia Costa',        comp:'Tanker',       shift:'06:00-18:00', maxH:12, avail:true  },
+    { id:'DR-10', name:'Marcus Chen',        comp:'Tanker',       shift:'05:00-17:00', maxH:12, avail:true  }
 ];
 
 var dispatches = [
