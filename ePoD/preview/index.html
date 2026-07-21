@@ -317,6 +317,48 @@
   }
   .step-dots .dot.active{ background:var(--brand-blue); width:22px; border-radius:4px; }
 
+  /* -------- Login screen -------- */
+  .login-title{
+    font-size:22px; font-weight:700; color:var(--ink); margin:8px 0 4px;
+    text-align:center;
+  }
+  .login-sub{
+    font-size:13px; color:var(--ink-2); text-align:center; margin:0 0 18px;
+  }
+  .login-form .field{ margin-top:12px; }
+  .btn-signin{
+    width:100%; background:var(--brand-blue); color:#fff; border:0;
+    padding:14px; font-size:15px; font-weight:700; border-radius:8px;
+    cursor:pointer; margin-top:22px; font-family:inherit;
+  }
+  .btn-signin:hover{ background:var(--brand-blue-2); }
+  .btn-signin:disabled{ background:#B8C1CC; cursor:not-allowed; }
+  .login-links{
+    display:flex; justify-content:space-between; margin-top:12px;
+    font-size:12px; color:var(--brand-blue-2); font-weight:600;
+  }
+  .login-links a{ color:var(--brand-blue-2); text-decoration:none; cursor:pointer; }
+  .login-links a:hover{ text-decoration:underline; }
+  .login-foot{
+    margin-top:auto; padding-top:18px; text-align:center;
+    font-size:11px; color:var(--ink-2);
+  }
+  .login-foot b{ color:var(--downer-navy); }
+  .userchip{
+    position:absolute; top:14px; right:16px; z-index:6;
+    display:flex; align-items:center; gap:6px;
+    background:var(--panel-alt); border:1px solid var(--line);
+    padding:4px 10px 4px 4px; border-radius:20px;
+    font-size:11px; color:var(--ink); cursor:pointer;
+    font-family:inherit;
+  }
+  .userchip .av{
+    width:22px; height:22px; border-radius:50%; background:var(--downer-navy);
+    color:#fff; display:grid; place-items:center;
+    font-size:10px; font-weight:700;
+  }
+  .userchip:hover{ background:#EEF2F6; }
+
   /* -------- Stage foot -------- */
   .stage-foot{
     display:flex; gap:8px; align-items:center; color:#B8C1CC; font-size:12px;
@@ -349,7 +391,11 @@
       <!-- App bar -->
       <div class="appbar">
         <button class="back-btn" id="backBtn" onclick="goBack()">←</button>
-        <span class="appbar-title" id="pageTitle">Delivery &amp; Returns</span>
+        <span class="appbar-title" id="pageTitle">Sign in</span>
+        <button class="userchip" id="userChip" onclick="signOut()" style="display:none;" title="Sign out">
+          <span class="av" id="userAv">D</span>
+          <span id="userLbl">driver</span>
+        </button>
       </div>
 
       <!-- Brand -->
@@ -360,8 +406,38 @@
         <span class="brand-sub">Proof of delivery · D365 F&amp;O</span>
       </div>
 
+      <!-- ============ SCREEN 0: Login ============ -->
+      <section class="screen active" id="screen0">
+        <h2 class="login-title">Sign in</h2>
+        <p class="login-sub">Access your D365 F&amp;O proof-of-delivery workspace</p>
+
+        <div class="login-form">
+          <div class="field">
+            <label for="loginUser">Username</label>
+            <input type="text" id="loginUser" placeholder="e.g. driver@downer.com"
+                   autocomplete="username" oninput="onLoginChange()" />
+          </div>
+          <div class="field">
+            <label for="loginPass">Password</label>
+            <input type="password" id="loginPass" placeholder="Enter password"
+                   autocomplete="current-password" oninput="onLoginChange()" />
+          </div>
+
+          <button class="btn-signin" id="btnSignIn" onclick="signIn()" disabled>Sign in</button>
+
+          <div class="login-links">
+            <a onclick="toast('Prototype — SSO not wired up')">Use SSO</a>
+            <a onclick="toast('Prototype — password reset not wired up')">Forgot password?</a>
+          </div>
+        </div>
+
+        <div class="login-foot">
+          Prototype — <b>any credentials</b> will sign you in.
+        </div>
+      </section>
+
       <!-- ============ SCREEN 1: Delivery / Return ============ -->
-      <section class="screen active" id="screen1">
+      <section class="screen" id="screen1">
         <h2 class="section">Select an Option</h2>
 
         <div class="option-card">
@@ -503,7 +579,8 @@
 <script>
   /* ================= State ================= */
   const state = {
-    page:     1,
+    page:     0,
+    user:     "",
     orderId:  "",
     validOrders: ["SO-1001","SO000000190"],   // any of these is accepted
     totalLoads: 1,
@@ -521,13 +598,17 @@
     document.getElementById('screen' + p).classList.add('active');
 
     const titles = {
+      0: "Sign in",
       1: "Delivery & Returns",
       2: "Scan Order ID",
       3: "Scan Load ID",
       4: "Confirm Receipt of Goods"
     };
     document.getElementById('pageTitle').textContent = titles[p];
-    document.getElementById('backBtn').disabled = (p === 1);
+    document.getElementById('backBtn').disabled = (p <= 1);
+
+    // show user chip only when logged in (past the login screen)
+    document.getElementById('userChip').style.display = (p >= 1) ? 'flex' : 'none';
 
     // show/hide the sticky submit button per page
     document.getElementById('submit2').style.display = (p === 2) ? 'block' : 'none';
@@ -547,6 +628,34 @@
 
   function goBack(){
     if(state.page > 1) goTo(state.page - 1);
+  }
+
+  /* ================= Login ================= */
+  function onLoginChange(){
+    const u = document.getElementById('loginUser').value.trim();
+    const p = document.getElementById('loginPass').value;
+    document.getElementById('btnSignIn').disabled = !(u.length > 0 && p.length > 0);
+  }
+  function signIn(){
+    const u = document.getElementById('loginUser').value.trim();
+    const p = document.getElementById('loginPass').value;
+    if(!u || !p) return;
+    // Prototype: accept any credentials
+    state.user = u;
+    const shortName = u.includes('@') ? u.split('@')[0] : u;
+    document.getElementById('userLbl').textContent = shortName;
+    document.getElementById('userAv').textContent  = (shortName[0] || 'D').toUpperCase();
+    toast("Signed in as " + shortName);
+    goTo(1);
+  }
+  function signOut(){
+    if(!confirm("Sign out of the Downer ePoD prototype?")) return;
+    state.user = "";
+    document.getElementById('loginPass').value = "";
+    onLoginChange();
+    // also reset the delivery workflow
+    resetWorkflow();
+    goTo(0);
   }
 
   /* ================= Page 2: Order ID ================= */
@@ -722,7 +831,12 @@
   }
 
   function restart(){
-    // full reset
+    resetWorkflow();
+    document.getElementById('successOverlay').classList.remove('show');
+    goTo(1);
+  }
+
+  function resetWorkflow(){
     state.orderId = ""; state.scanned = []; state.hasSignature = false; state.receiver = "Frank";
     document.getElementById('orderIdInput').value = "";
     document.getElementById('loadIdInput').value  = "";
@@ -733,7 +847,6 @@
     document.getElementById('successOverlay').classList.remove('show');
     // clear canvas if it was initialised
     if(sigCtx){ clearSig(); }
-    goTo(1);
   }
 
   /* ================= Toast ================= */
@@ -757,6 +870,13 @@
         goBack();
       }
     });
+
+    // Enter on login fields submits
+    const loginSubmit = (e) => {
+      if(e.key === 'Enter' && !document.getElementById('btnSignIn').disabled) signIn();
+    };
+    document.getElementById('loginUser').addEventListener('keydown', loginSubmit);
+    document.getElementById('loginPass').addEventListener('keydown', loginSubmit);
 
     // Enter on order-id input submits
     document.getElementById('orderIdInput').addEventListener('keydown', (e) => {
