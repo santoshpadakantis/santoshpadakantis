@@ -97,6 +97,19 @@
     .subtab-cnt:empty { display:none; }
     #panel-fleet .fleet-section { display:none; margin-bottom:0; }
     #panel-fleet .fleet-section.active { display:block; }
+    /* Assign vehicle & driver dialog */
+    .alloc-summary { background:var(--d365-selected); padding:8px 12px; border-radius:2px; font-size:13px; margin-bottom:14px; }
+    .alloc-section-hd { font-size:12px; font-weight:600; text-transform:uppercase; color:var(--d365-text-sec); margin:4px 0 6px 2px; letter-spacing:0.3px; }
+    .candidate-list { max-height:240px; overflow-y:auto; border:1px solid var(--d365-border); border-radius:2px; background:#fff; }
+    .candidate-row { display:flex; align-items:flex-start; gap:10px; padding:10px 12px; cursor:pointer; border-bottom:1px solid var(--d365-border); margin:0; }
+    .candidate-row:last-child { border-bottom:none; }
+    .candidate-row:hover { background:var(--d365-hover); }
+    .candidate-row.selected { background:var(--d365-selected); box-shadow:inset 3px 0 0 var(--d365-blue); }
+    .candidate-row input[type="radio"] { margin-top:3px; accent-color:var(--d365-blue); }
+    .candidate-row .cand-main { flex:1; min-width:0; }
+    .candidate-row .cand-line1 { font-size:13px; }
+    .candidate-row .cand-line2 { font-size:11px; margin-top:2px; color:var(--d365-text-sec); }
+    .pill-tag { display:inline-block; background:var(--d365-blue); color:#fff; font-size:10px; font-weight:700; padding:1px 7px; border-radius:8px; margin-left:6px; letter-spacing:0.3px; vertical-align:1px; }
     /* Grid */
     .grid-wrap { border:1px solid var(--d365-border-dk); overflow:auto; background:var(--d365-surface); }
     table.grid { width:100%; border-collapse:collapse; font-size:13px; }
@@ -591,6 +604,33 @@
     </div>
 </div>
 
+<div class="backdrop" id="allocateDialog">
+    <div class="dialog" style="width:760px;max-width:92vw">
+        <div class="dialog-hd">
+            <h3>Assign vehicle &amp; driver</h3>
+            <span class="x" onclick="closeAllocateDialog()">&times;</span>
+        </div>
+        <div class="dialog-body">
+            <div class="alloc-summary" id="allocSummary"></div>
+            <div style="display:grid;grid-template-columns:1fr 1fr;gap:14px">
+                <div>
+                    <div class="alloc-section-hd">Vehicle</div>
+                    <div class="candidate-list" id="allocVehicles"></div>
+                </div>
+                <div>
+                    <div class="alloc-section-hd">Driver</div>
+                    <div class="candidate-list" id="allocDrivers"></div>
+                </div>
+            </div>
+            <div class="muted" style="font-size:12px;margin-top:10px">Recommended options are pre-selected and highlighted. Only compatible candidates (competency, capacity, availability, not booked on this date) are listed.</div>
+        </div>
+        <div class="dialog-ft">
+            <button class="ap-btn" onclick="closeAllocateDialog()">Cancel</button>
+            <button class="ap-btn primary" onclick="confirmAllocation()">Create dispatch</button>
+        </div>
+    </div>
+</div>
+
 <script>
 const today = new Date();
 const iso = function(d) { return d.toISOString().split('T')[0]; };
@@ -745,6 +785,7 @@ var dispatches = [
 var competencyRank = { 'Standard':0, 'Refrigerated':1, 'HAZMAT':2, 'HeavyGoods':3, 'Tanker':4 };
 var compClass      = { 'Standard':'', 'Refrigerated':'reefer', 'HAZMAT':'hazmat', 'HeavyGoods':'heavy', 'Tanker':'tanker' };
 var selectedDispatch = null;
+var pendingAllocation = null;
 var bizMode = 'AU-CARRIER';
 var loadDirection = 'OUT';
 
@@ -1404,19 +1445,104 @@ function optimizeAndAllocate() {
         bookedDrivers[d.driver]  = true;
     });
 
-    var vehicle = vehicles.find(function(v){
+    var candidateVehicles = vehicles.filter(function(v){
         return v.avail && v.maxW >= totWt && v.maxV >= totVol &&
                v.maxD >= selected.length && competencyRank[v.comp] >= maxComp &&
                !bookedVehicles[v.id];
     });
-    if (!vehicle) { toast('No available vehicle covers ' + fmt(totWt) + 'kg, ' + fmt(totVol,1) + 'm\u00b3, ' + selected.length + ' drops, competency ' + compName + '.', 'error'); return; }
+    if (!candidateVehicles.length) {
+        toast('No available vehicle covers ' + fmt(totWt) + 'kg, ' + fmt(totVol,1) + 'm\u00b3, ' + selected.length + ' drops, competency ' + compName + '.', 'error');
+        return;
+    }
 
-    var driver = drivers.find(function(d){
+    var candidateDrivers = drivers.filter(function(d){
         return d.avail && competencyRank[d.comp] >= maxComp && !bookedDrivers[d.id];
     });
-    if (!driver) { toast('No available driver with competency ' + compName + '.', 'error'); return; }
+    if (!candidateDrivers.length) {
+        toast('No available driver with competency ' + compName + '.', 'error');
+        return;
+    }
 
-    var legs = selected.slice().sort(function(a,b){
+    pendingAllocation = {
+        selected: selected,
+        totWt: totWt, totVol: totVol,
+        compName: compName, maxComp: maxComp,
+        dispatchDate: dispatchDate,
+        candidateVehicles: candidateVehicles,
+        candidateDrivers: candidateDrivers,
+        vehicleId: candidateVehicles[0].id,
+        driverId:  candidateDrivers[0].id
+    };
+    openAllocateDialog();
+}
+
+function openAllocateDialog() {
+    var pa = pendingAllocation;
+    if (!pa) return;
+    document.getElementById('allocSummary').innerHTML =
+        '<span class="strong">' + pa.selected.length + '</span> load(s) \u00b7 ' +
+        '<span class="strong">' + fmt(pa.totWt) + '</span> kg \u00b7 ' +
+        '<span class="strong">' + fmt(pa.totVol,1) + '</span> m\u00b3 \u00b7 ' +
+        'Competency: <span class="comp-tag ' + compClass[pa.compName] + '">' + pa.compName + '</span> \u00b7 ' +
+        'Date: <span class="strong">' + pa.dispatchDate + '</span>';
+
+    var vHost = document.getElementById('allocVehicles');
+    vHost.innerHTML = pa.candidateVehicles.map(function(v, i){
+        var isSel = v.id === pa.vehicleId;
+        return '<label class="candidate-row' + (isSel ? ' selected' : '') + '" data-veh="' + v.id + '">' +
+            '<input type="radio" name="allocVeh" value="' + v.id + '"' + (isSel ? ' checked' : '') + '>' +
+            '<div class="cand-main">' +
+                '<div class="cand-line1"><span class="strong">' + v.id + '</span> \u00b7 ' + v.make +
+                (i === 0 ? ' <span class="pill-tag">Recommended</span>' : '') + '</div>' +
+                '<div class="cand-line2">Capacity ' + fmt(v.maxW) + ' kg \u00b7 ' + fmt(v.maxV,1) + ' m\u00b3 \u00b7 up to ' + v.maxD + ' drops \u00b7 ' + v.comp + ' \u00b7 ' + v.home + '</div>' +
+            '</div>' +
+        '</label>';
+    }).join('');
+    vHost.querySelectorAll('input[name="allocVeh"]').forEach(function(r){
+        r.addEventListener('change', function(){
+            pendingAllocation.vehicleId = r.value;
+            vHost.querySelectorAll('.candidate-row').forEach(function(row){
+                row.classList.toggle('selected', row.dataset.veh === r.value);
+            });
+        });
+    });
+
+    var dHost = document.getElementById('allocDrivers');
+    dHost.innerHTML = pa.candidateDrivers.map(function(d, i){
+        var isSel = d.id === pa.driverId;
+        return '<label class="candidate-row' + (isSel ? ' selected' : '') + '" data-dr="' + d.id + '">' +
+            '<input type="radio" name="allocDr" value="' + d.id + '"' + (isSel ? ' checked' : '') + '>' +
+            '<div class="cand-main">' +
+                '<div class="cand-line1"><span class="strong">' + d.id + '</span> \u00b7 ' + d.name +
+                (i === 0 ? ' <span class="pill-tag">Recommended</span>' : '') + '</div>' +
+                '<div class="cand-line2">' + d.comp + ' \u00b7 ' + d.shift + ' shift \u00b7 up to ' + d.maxH + ' h/day</div>' +
+            '</div>' +
+        '</label>';
+    }).join('');
+    dHost.querySelectorAll('input[name="allocDr"]').forEach(function(r){
+        r.addEventListener('change', function(){
+            pendingAllocation.driverId = r.value;
+            dHost.querySelectorAll('.candidate-row').forEach(function(row){
+                row.classList.toggle('selected', row.dataset.dr === r.value);
+            });
+        });
+    });
+
+    document.getElementById('allocateDialog').classList.add('open');
+}
+
+function closeAllocateDialog() {
+    document.getElementById('allocateDialog').classList.remove('open');
+}
+
+function confirmAllocation() {
+    var pa = pendingAllocation;
+    if (!pa) { closeAllocateDialog(); return; }
+    var vehicle = vehicles.find(function(v){ return v.id === pa.vehicleId; });
+    var driver  = drivers.find(function(d){ return d.id === pa.driverId; });
+    if (!vehicle || !driver) { toast('Please select a vehicle and a driver.', 'warning'); return; }
+
+    var legs = pa.selected.slice().sort(function(a,b){
         return a.twFrom.localeCompare(b.twFrom) || a.zip.localeCompare(b.zip);
     });
     var clockMin = 8*60;
@@ -1426,7 +1552,6 @@ function optimizeAndAllocate() {
             seq: i+1, loadId:o.loadId, cust:o.cust, suburb:o.suburb,
             arrival: minToHm(Math.min(clockMin, 23*60)),
             twFrom:o.twFrom, twTo:o.twTo, weight:o.weight, volume:o.volume,
-            // Preserve source order fields so this leg can be moved or returned to pending
             dir:o.dir, custPO:o.custPO, prodOrder:o.prodOrder, custCode:o.custCode,
             ship:o.ship, state:o.state, zip:o.zip, comp:o.comp
         };
@@ -1434,23 +1559,25 @@ function optimizeAndAllocate() {
 
     var newId = 'DISP-' + (2000 + dispatches.length + 1);
     var disp = {
-        id: newId, date: dispatchDate, depart: '08:00',
+        id: newId, date: pa.dispatchDate, depart: '08:00',
         vehicle: vehicle.id, driver: driver.id,
-        status: 'Allocated', drops: selected.length,
-        weight: totWt, volume: totVol, origin: document.getElementById('origin').value,
+        status: 'Allocated', drops: pa.selected.length,
+        weight: pa.totWt, volume: pa.totVol, origin: document.getElementById('origin').value,
         legs: sequenced
     };
     dispatches.push(disp);
 
     pendingOrders = pendingOrders.filter(function(o){ return !o.selected; });
 
-    toast(newId + ' created \u2014 ' + vehicle.id + ' / ' + driver.id + ' \u00b7 ' + selected.length + ' drops \u00b7 ' + fmt(totWt) + 'kg', 'success');
+    toast(newId + ' created \u2014 ' + vehicle.id + ' / ' + driver.id + ' \u00b7 ' + pa.selected.length + ' drops \u00b7 ' + fmt(pa.totWt) + 'kg', 'success');
     if (bizMode === 'NZ-INTEGRATED') {
-        toast('Production schedule updated \u2014 ' + selected.length + ' load(s) pushed upstream to Road Science batching plant.', 'info');
+        toast('Production schedule updated \u2014 ' + pa.selected.length + ' load(s) pushed upstream to Road Science batching plant.', 'info');
     } else if (bizMode === 'AU-SUPPLIER') {
-        toast('Inventory reserved at origin plant for ' + selected.length + ' load(s).', 'info');
+        toast('Inventory reserved at origin plant for ' + pa.selected.length + ' load(s).', 'info');
     }
 
+    pendingAllocation = null;
+    closeAllocateDialog();
     renderPending();
     renderKpis();
     switchTab('schedule');
