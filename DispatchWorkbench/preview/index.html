@@ -87,6 +87,16 @@
     .fasttab-header .title { font-weight:600; flex:1; }
     .fasttab-header .summary { color:var(--d365-text-sec); font-size:12px; }
     .fasttab-body { padding:12px 16px; }
+    /* Sub-tab strip (Fleet & Vehicle Register sections) */
+    .subtab-strip { display:flex; gap:4px; flex-wrap:wrap; padding:6px; margin:0 0 12px 0; background:var(--d365-surface); border:1px solid var(--d365-border); border-radius:2px; }
+    .subtab { display:inline-flex; align-items:center; gap:6px; padding:6px 14px; cursor:pointer; color:var(--d365-text-sec); font-weight:600; font-size:13px; border-radius:2px; user-select:none; transition:background 0.12s, color 0.12s; }
+    .subtab:hover { background:var(--d365-hover); color:var(--d365-text); }
+    .subtab.active { background:var(--d365-blue); color:#fff; }
+    .subtab.active .subtab-cnt { background:rgba(255,255,255,0.22); color:#fff; }
+    .subtab-cnt { background:var(--d365-selected); color:var(--d365-blue-darker); font-size:11px; padding:1px 7px; border-radius:8px; min-width:18px; text-align:center; font-weight:600; }
+    .subtab-cnt:empty { display:none; }
+    #panel-fleet .fleet-section { display:none; margin-bottom:0; }
+    #panel-fleet .fleet-section.active { display:block; }
     /* Grid */
     .grid-wrap { border:1px solid var(--d365-border-dk); overflow:auto; background:var(--d365-surface); }
     table.grid { width:100%; border-collapse:collapse; font-size:13px; }
@@ -1338,6 +1348,8 @@ function renderFleet() {
     });
     document.getElementById('driverSummary').textContent =
         drivers.length + ' drivers \u00b7 ' + drivers.filter(function(d){return d.avail;}).length + ' available';
+
+    updateFleetSubtabCounts();
 }
 
 function openHookupHistory(trailerId) {
@@ -1478,7 +1490,65 @@ function switchTab(name) {
     document.querySelectorAll('.tab-panel').forEach(function(p){ p.classList.toggle('active', p.id === 'panel-'+name); });
 }
 
+/* ---------- Fleet & Vehicle Register sub-tabs ---------- */
+var fleetSections = [
+    { id:'primemovers', label:'Prime movers' },
+    { id:'trailers',    label:'Trailers & tankers' },
+    { id:'compliance',  label:'Compliance & service' },
+    { id:'utilisation', label:'Utilisation' },
+    { id:'drivers',     label:'Drivers' }
+];
+(function initFleetSubtabs() {
+    var panel = document.getElementById('panel-fleet');
+    if (!panel) return;
+    var fasttabs = panel.querySelectorAll(':scope > .fasttab');
+    fasttabs.forEach(function(el, i) {
+        var sec = fleetSections[i];
+        if (!sec) return;
+        el.classList.add('fleet-section');
+        el.dataset.fleetSection = sec.id;
+        if (i === 0) el.classList.add('active');
+    });
+    var strip = document.createElement('div');
+    strip.className = 'subtab-strip';
+    fleetSections.forEach(function(sec, i) {
+        var t = document.createElement('div');
+        t.className = 'subtab' + (i === 0 ? ' active' : '');
+        t.dataset.section = sec.id;
+        t.innerHTML = '<span class="lbl">' + sec.label + '</span>' +
+                      '<span class="subtab-cnt" data-cnt="' + sec.id + '"></span>';
+        t.addEventListener('click', function(){ switchFleetSection(sec.id); });
+        strip.appendChild(t);
+    });
+    panel.insertBefore(strip, panel.firstChild);
+})();
+
+function switchFleetSection(name) {
+    document.querySelectorAll('#panel-fleet .subtab').forEach(function(t){
+        t.classList.toggle('active', t.dataset.section === name);
+    });
+    document.querySelectorAll('#panel-fleet .fleet-section').forEach(function(s){
+        s.classList.toggle('active', s.dataset.fleetSection === name);
+    });
+}
+
+function updateFleetSubtabCounts() {
+    var overdue = complianceRecords.filter(function(r){ return complianceStatus(r.due).cls === 'overdue'; }).length;
+    var cnts = {
+        primemovers: primeMovers.length,
+        trailers:    trailers.length,
+        compliance:  overdue ? (overdue + ' \u26A0') : complianceRecords.length,
+        utilisation: '30d',
+        drivers:     drivers.filter(function(d){ return d.avail; }).length + '/' + drivers.length
+    };
+    Object.keys(cnts).forEach(function(k){
+        var el = document.querySelector('#panel-fleet .subtab-cnt[data-cnt="' + k + '"]');
+        if (el) el.textContent = cnts[k];
+    });
+}
+
 document.addEventListener('click', function(e) {
+    /* Don't collapse a fasttab when clicking a control inside its own header (checkboxes, buttons). */
     var hd = e.target.closest('.fasttab-header');
     if (hd) hd.parentElement.classList.toggle('collapsed');
 });
