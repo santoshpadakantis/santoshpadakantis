@@ -1,0 +1,772 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+<meta charset="UTF-8" />
+<meta name="viewport" content="width=device-width, initial-scale=1.0" />
+<title>Downer ePoD — Loads (D365 F&O)</title>
+<style>
+  :root{
+    --downer-red:   #E4002B;   /* Downer brand red */
+    --downer-navy:  #0A1F3C;
+    --brand-blue:   #1FB6E6;   /* action blue from mock */
+    --brand-blue-2: #17A2CE;
+    --ink:          #1B2431;
+    --ink-2:        #4B5563;
+    --line:         #E6E9EE;
+    --line-2:       #CFD5DE;
+    --bg-stage:     #1A1A1A;   /* dark backdrop behind phones */
+    --panel:        #FFFFFF;
+    --panel-alt:    #F7F8FA;
+    --success:      #2E9E58;
+    --danger:       #D64545;
+    --amber:        #E0A030;
+    --radius:       10px;
+    --font:         "Segoe UI", -apple-system, system-ui, "Helvetica Neue", Arial, sans-serif;
+  }
+  *{ box-sizing:border-box; }
+  html,body{ margin:0; padding:0; height:100%; }
+  body{
+    font-family:var(--font); background:var(--bg-stage); color:var(--ink);
+    min-height:100vh; display:grid; place-items:center; padding:24px;
+  }
+
+  /* -------- Stage & Phone frame -------- */
+  .stage{
+    display:flex; flex-direction:column; align-items:center; gap:16px;
+  }
+  .stage-title{
+    color:#F1F3F6; font-size:14px; letter-spacing:.4px;
+    text-transform:uppercase; opacity:.7;
+  }
+  .stage-title b{ color:#fff; opacity:1; font-weight:600; }
+
+  .phone{
+    width:390px; height:820px; background:#000;
+    border-radius:50px; padding:12px;
+    box-shadow:0 30px 80px rgba(0,0,0,.6), inset 0 0 0 2px #2a2a2a;
+    position:relative;
+  }
+  .phone-inner{
+    width:100%; height:100%; background:var(--panel);
+    border-radius:40px; overflow:hidden; position:relative;
+    display:flex; flex-direction:column;
+  }
+  .notch{
+    position:absolute; top:14px; left:50%; transform:translateX(-50%);
+    width:120px; height:32px; background:#000; border-radius:20px; z-index:5;
+  }
+
+  /* -------- Status bar -------- */
+  .statusbar{
+    height:52px; padding:0 32px; display:flex; align-items:center; justify-content:space-between;
+    font-weight:600; font-size:14px; color:var(--ink); flex-shrink:0;
+  }
+  .statusbar .icons{ display:flex; align-items:center; gap:6px; font-size:12px; }
+  .statusbar .icons svg{ width:15px; height:12px; }
+
+  /* -------- App header -------- */
+  .appbar{
+    display:flex; align-items:center; padding:6px 16px 4px; flex-shrink:0;
+    position:relative;
+  }
+  .back-btn{
+    width:36px; height:36px; border:0; background:transparent; cursor:pointer;
+    display:grid; place-items:center; color:var(--ink); font-size:22px;
+    border-radius:50%;
+  }
+  .back-btn:hover{ background:var(--panel-alt); }
+  .back-btn:disabled{ opacity:.25; cursor:not-allowed; }
+  .appbar-title{
+    position:absolute; left:0; right:0; text-align:center;
+    font-size:17px; font-weight:600; color:var(--ink); pointer-events:none;
+  }
+
+  /* -------- Downer logo -------- */
+  .brand{
+    display:flex; flex-direction:column; align-items:center; padding:12px 16px 6px; flex-shrink:0;
+  }
+  .brand-mark{
+    display:inline-flex; align-items:baseline; gap:0;
+    font-family:"Segoe UI", Arial, sans-serif;
+    line-height:1;
+  }
+  .brand-mark .word{
+    font-size:32px; font-weight:800; color:var(--downer-navy);
+    letter-spacing:-1px;
+  }
+  .brand-mark .dot{
+    width:10px; height:10px; background:var(--downer-red);
+    border-radius:50%; margin:0 2px 4px 3px; align-self:flex-end;
+  }
+  .brand-sub{
+    font-size:9px; font-weight:600; color:var(--ink-2); letter-spacing:2px;
+    text-transform:uppercase; margin-top:4px;
+  }
+
+  /* -------- Screen container (scrollable) -------- */
+  .screen{
+    flex:1; overflow-y:auto; padding:8px 22px 22px;
+    display:none; flex-direction:column;
+  }
+  .screen.active{ display:flex; }
+  .screen::-webkit-scrollbar{ width:6px; }
+  .screen::-webkit-scrollbar-thumb{ background:var(--line-2); border-radius:3px; }
+
+  h2.section{
+    font-size:20px; font-weight:700; color:var(--ink); margin:14px 0 6px;
+  }
+  p.hint{
+    font-size:13px; color:var(--ink-2); margin:0 0 16px;
+  }
+
+  /* -------- Cards & options -------- */
+  .option-card{
+    display:flex; align-items:center; gap:14px; padding:16px 18px;
+    background:#fff; border:1px solid var(--line); border-radius:12px;
+    margin-bottom:12px; box-shadow:0 1px 3px rgba(20,30,50,.04);
+  }
+  .option-card .oi{
+    width:44px; height:44px; border-radius:10px; background:var(--panel-alt);
+    display:grid; place-items:center; font-size:20px; color:var(--downer-navy);
+  }
+  .option-card .ol{ flex:1; font-weight:600; font-size:15px; }
+  .option-card .os{ font-size:12px; color:var(--ink-2); margin-top:2px; font-weight:400; }
+  .select-btn{
+    background:var(--brand-blue); color:#fff; border:0; padding:8px 18px;
+    border-radius:20px; font-size:13px; font-weight:600; cursor:pointer;
+    font-family:inherit;
+  }
+  .select-btn:hover{ background:var(--brand-blue-2); }
+
+  /* -------- Barcode scan area -------- */
+  .scan-box{
+    background:#fff; border:1px solid var(--line); border-radius:12px;
+    padding:22px 20px; margin:12px 0 18px;
+    display:flex; flex-direction:column; align-items:center; gap:12px;
+  }
+  .scan-frame{
+    width:220px; height:200px; position:relative;
+    display:grid; place-items:center;
+    background:repeating-linear-gradient(90deg, #111 0 3px, transparent 3px 5px, #111 5px 7px, transparent 7px 12px);
+    background-size:100% 60%;
+    background-position:center;
+    background-repeat:no-repeat;
+    border-radius:6px;
+    overflow:hidden;
+  }
+  .scan-frame::before, .scan-frame::after,
+  .scan-frame .cornerTR, .scan-frame .cornerBR{
+    content:""; position:absolute; width:28px; height:28px;
+    border:3px solid var(--ink);
+  }
+  .scan-frame::before{ top:0; left:0; border-right:0; border-bottom:0; border-top-left-radius:6px; }
+  .scan-frame::after{ bottom:0; left:0; border-right:0; border-top:0; border-bottom-left-radius:6px; }
+  .scan-frame .cornerTR{ top:0; right:0; border-left:0; border-bottom:0; border-top-right-radius:6px; }
+  .scan-frame .cornerBR{ bottom:0; right:0; border-left:0; border-top:0; border-bottom-right-radius:6px; }
+
+  .scan-btn{
+    display:flex; align-items:center; justify-content:center; gap:8px;
+    width:100%; background:#EEF2F6; border:1px solid var(--line-2);
+    border-radius:20px; padding:10px; color:var(--ink); font-weight:600;
+    font-size:13px; cursor:pointer; font-family:inherit;
+  }
+  .scan-btn:hover{ background:#E4EAF0; }
+
+  /* -------- Inputs -------- */
+  .field{ margin-top:10px; }
+  .field label{
+    display:block; font-size:13px; font-weight:600; color:var(--ink);
+    margin-bottom:6px;
+  }
+  .field input{
+    width:100%; padding:12px 14px; font-size:14px; font-family:inherit;
+    background:#fff; border:1px solid var(--line-2); border-radius:8px;
+    color:var(--ink); outline:none;
+  }
+  .field input:focus{ border-color:var(--brand-blue); box-shadow:0 0 0 3px rgba(31,182,230,.15); }
+
+  .divider-or{
+    display:flex; align-items:center; gap:10px; margin:10px 0 6px;
+    color:var(--ink-2); font-size:12px; font-weight:600;
+  }
+  .divider-or::before, .divider-or::after{
+    content:""; flex:1; height:1px; background:var(--line);
+  }
+
+  /* -------- Add button (blue pill) -------- */
+  .btn-add{
+    width:100%; background:var(--brand-blue); color:#fff; border:0;
+    padding:12px; font-size:14px; font-weight:600; border-radius:8px;
+    cursor:pointer; margin-top:10px; font-family:inherit;
+    display:flex; align-items:center; justify-content:center; gap:6px;
+  }
+  .btn-add:hover{ background:var(--brand-blue-2); }
+  .btn-add:disabled{ background:#B8C1CC; cursor:not-allowed; }
+
+  /* -------- Scanned list -------- */
+  .scanned-header{
+    display:flex; justify-content:space-between; align-items:baseline;
+    margin:14px 0 4px;
+  }
+  .scanned-title{ font-size:16px; font-weight:700; color:var(--ink); }
+  .scanned-missing{ font-size:14px; font-weight:700; color:var(--danger); }
+  .scanned-count{ font-size:12px; color:var(--ink-2); margin-bottom:8px; }
+
+  .load-row{
+    display:flex; align-items:center; gap:10px; padding:10px 4px;
+    border-bottom:1px solid var(--line);
+  }
+  .load-row:last-child{ border-bottom:0; }
+  .load-info{ flex:1; min-width:0; }
+  .load-id{
+    font-size:14px; font-weight:600; color:var(--ink);
+    font-family:"Segoe UI", monospace;
+  }
+  .load-ts{ font-size:11px; color:var(--ink-2); margin-top:2px; }
+  .load-remove{
+    width:26px; height:26px; border:0; background:transparent; cursor:pointer;
+    color:var(--danger); font-size:16px; border-radius:50%;
+  }
+  .load-remove:hover{ background:#FDECEC; }
+
+  /* -------- Submit button (bottom) -------- */
+  .submit-wrap{
+    padding:14px 22px 22px; border-top:1px solid var(--line);
+    background:#fff; flex-shrink:0;
+  }
+  .btn-submit{
+    width:100%; background:var(--brand-blue); color:#fff; border:0;
+    padding:14px; font-size:15px; font-weight:700; border-radius:8px;
+    cursor:pointer; font-family:inherit;
+  }
+  .btn-submit:hover{ background:var(--brand-blue-2); }
+  .btn-submit:disabled{ background:#B8C1CC; cursor:not-allowed; }
+
+  /* -------- Order summary (Page 4) -------- */
+  .order-summary{
+    padding:14px 16px; background:var(--panel-alt); border:1px solid var(--line);
+    border-radius:10px; font-size:13px; line-height:1.7; margin-bottom:14px;
+  }
+  .order-summary b{ color:var(--ink); }
+  .order-summary .k{ color:var(--ink-2); display:inline-block; min-width:110px; }
+
+  /* -------- Signature pad -------- */
+  .sig-wrap{
+    background:#F9FBFD; border:1px dashed var(--line-2); border-radius:10px;
+    position:relative; overflow:hidden; margin-bottom:16px;
+  }
+  #sigCanvas{
+    display:block; width:100%; height:230px; touch-action:none; cursor:crosshair;
+    background:#F9FBFD;
+  }
+  .sig-hint{
+    position:absolute; inset:0; display:grid; place-items:center;
+    pointer-events:none; color:#8892A0; font-size:13px; font-style:italic;
+  }
+  .sig-hint.hidden{ display:none; }
+
+  .sig-actions{
+    display:grid; grid-template-columns:1fr 1fr; gap:10px; padding:0 0 4px;
+  }
+  .btn-outline{
+    background:#fff; border:1px solid var(--line-2); color:var(--ink);
+    padding:12px; font-size:14px; font-weight:600; border-radius:8px;
+    cursor:pointer; font-family:inherit;
+  }
+  .btn-outline:hover{ background:var(--panel-alt); }
+
+  /* -------- Success screen overlay -------- */
+  .success-overlay{
+    position:absolute; inset:0; background:#fff; display:none;
+    flex-direction:column; align-items:center; justify-content:center;
+    padding:30px; text-align:center; z-index:10; border-radius:40px;
+  }
+  .success-overlay.show{ display:flex; }
+  .success-icon{
+    width:80px; height:80px; border-radius:50%; background:var(--success);
+    color:#fff; display:grid; place-items:center; font-size:44px;
+    margin-bottom:16px;
+  }
+  .success-overlay h3{ font-size:20px; margin:0 0 8px; }
+  .success-overlay p{ font-size:14px; color:var(--ink-2); margin:0 0 20px; }
+  .success-overlay .code{ font-family:monospace; color:var(--downer-navy); font-weight:700; }
+
+  /* -------- Toast -------- */
+  .toast{
+    position:absolute; left:50%; bottom:100px; transform:translateX(-50%);
+    background:var(--ink); color:#fff; padding:10px 18px; border-radius:20px;
+    font-size:13px; font-weight:500; opacity:0; pointer-events:none;
+    transition:opacity .2s, transform .2s; z-index:8; white-space:nowrap;
+    max-width:320px;
+  }
+  .toast.show{ opacity:1; transform:translateX(-50%) translateY(-4px); }
+  .toast.error{ background:var(--danger); }
+
+  /* -------- Home indicator -------- */
+  .home-indicator{
+    position:absolute; bottom:8px; left:50%; transform:translateX(-50%);
+    width:130px; height:5px; background:var(--ink); border-radius:3px; opacity:.9;
+  }
+
+  /* -------- Step dots -------- */
+  .step-dots{
+    display:flex; justify-content:center; gap:8px; margin-top:12px;
+  }
+  .step-dots .dot{
+    width:8px; height:8px; border-radius:50%; background:var(--line-2);
+  }
+  .step-dots .dot.active{ background:var(--brand-blue); width:22px; border-radius:4px; }
+
+  /* -------- Stage foot -------- */
+  .stage-foot{
+    display:flex; gap:8px; align-items:center; color:#B8C1CC; font-size:12px;
+  }
+  .stage-foot .kbd{
+    background:#2b2b2b; border:1px solid #3a3a3a; color:#eee;
+    padding:2px 6px; border-radius:4px; font-family:monospace; font-size:11px;
+  }
+</style>
+</head>
+<body>
+
+<div class="stage">
+  <div class="stage-title">Downer ePoD · <b>Sales order SO-1001</b> · captures POD signature into D365 F&amp;O</div>
+
+  <div class="phone">
+    <div class="notch"></div>
+    <div class="phone-inner">
+
+      <!-- Status bar -->
+      <div class="statusbar">
+        <span>9:41</span>
+        <span class="icons">
+          <span>●●●●●</span>
+          <svg viewBox="0 0 16 12" fill="currentColor"><path d="M0 10h3v2H0zm5-3h3v5H5zm5-3h3v8h-3zm5-4h1v12h-1z"/></svg>
+          <svg viewBox="0 0 20 12" fill="none" stroke="currentColor" stroke-width="1.5"><rect x=".75" y=".75" width="17" height="10.5" rx="2.5"/><rect x="2.5" y="2.5" width="12" height="7" rx="1" fill="currentColor" stroke="none"/><rect x="18.5" y="4" width="1.2" height="4" fill="currentColor" stroke="none"/></svg>
+        </span>
+      </div>
+
+      <!-- App bar -->
+      <div class="appbar">
+        <button class="back-btn" id="backBtn" onclick="goBack()">←</button>
+        <span class="appbar-title" id="pageTitle">Delivery &amp; Returns</span>
+      </div>
+
+      <!-- Brand -->
+      <div class="brand">
+        <span class="brand-mark">
+          <span class="word">downer</span><span class="dot"></span>
+        </span>
+        <span class="brand-sub">Proof of delivery · D365 F&amp;O</span>
+      </div>
+
+      <!-- ============ SCREEN 1: Delivery / Return ============ -->
+      <section class="screen active" id="screen1">
+        <h2 class="section">Select an Option</h2>
+
+        <div class="option-card">
+          <div class="oi">🚚</div>
+          <div>
+            <div class="ol">Delivery</div>
+            <div class="os">Deliver loads and capture receiver signature</div>
+          </div>
+          <button class="select-btn" onclick="goTo(2)">Select</button>
+        </div>
+
+        <div class="option-card">
+          <div class="oi">↩️</div>
+          <div>
+            <div class="ol">Return Pick Up</div>
+            <div class="os">Collect returned mix from customer site</div>
+          </div>
+          <button class="select-btn" onclick="goTo(2)">Select</button>
+        </div>
+
+        <div class="step-dots">
+          <span class="dot active"></span><span class="dot"></span>
+          <span class="dot"></span><span class="dot"></span>
+        </div>
+      </section>
+
+      <!-- ============ SCREEN 2: Scan Order ID ============ -->
+      <section class="screen" id="screen2">
+        <h2 class="section">Scan Order ID</h2>
+        <p class="hint">Please scan the barcode to proceed</p>
+
+        <div class="scan-box">
+          <div class="scan-frame">
+            <span class="cornerTR"></span><span class="cornerBR"></span>
+          </div>
+          <button class="scan-btn" onclick="simScanOrder()">📷&nbsp; Scan Barcode</button>
+        </div>
+
+        <div class="divider-or">Enter Order ID Manually</div>
+
+        <div class="field">
+          <label for="orderIdInput">Order ID Field</label>
+          <input type="text" id="orderIdInput" placeholder="Enter Order ID" oninput="onOrderIdChange()" />
+        </div>
+
+        <div class="step-dots" style="margin-top:auto; padding-top:16px;">
+          <span class="dot"></span><span class="dot active"></span>
+          <span class="dot"></span><span class="dot"></span>
+        </div>
+      </section>
+
+      <div class="submit-wrap" id="submit2" style="display:none;">
+        <button class="btn-submit" id="btnSubmit2" onclick="submitOrderId()" disabled>Submit</button>
+      </div>
+
+      <!-- ============ SCREEN 3: Scan Load ID ============ -->
+      <section class="screen" id="screen3">
+        <h2 class="section">Scan Load ID</h2>
+
+        <button class="scan-btn" style="width:100%; padding:12px;" onclick="simScanLoad()">📷&nbsp; Scan Barcode</button>
+
+        <div class="field">
+          <label for="loadIdInput">Enter Load ID manually</label>
+          <input type="text" id="loadIdInput" placeholder="e.g. LD-1001-05" oninput="onLoadIdChange()" />
+        </div>
+
+        <button class="btn-add" id="btnAddLoad" onclick="addLoad()" disabled>＋ Add</button>
+
+        <div class="scanned-header">
+          <span class="scanned-title">Scanned Barcode</span>
+          <span class="scanned-missing" id="missingLbl">Missing: 1</span>
+        </div>
+        <div class="scanned-count">
+          Total no. of loads: <b id="totalLoads">1</b>
+          &nbsp;·&nbsp; Total scanned loads: <b id="scannedCount">0</b>
+        </div>
+
+        <div id="loadList"></div>
+      </section>
+
+      <div class="submit-wrap" id="submit3" style="display:none;">
+        <button class="btn-submit" id="btnSubmit3" onclick="submitLoads()" disabled>Submit</button>
+      </div>
+
+      <!-- ============ SCREEN 4: Confirm Receipt of Goods ============ -->
+      <section class="screen" id="screen4">
+        <h2 class="section">Please sign below to confirm your order</h2>
+
+        <div class="order-summary">
+          <div><span class="k">Order ID:</span><b id="sOrder">SO-1001</b></div>
+          <div><span class="k">Delivery name:</span><b id="sCust">Metro Civil Pty Ltd</b></div>
+          <div><span class="k">Product:</span><b>AC20M 30% RAP C450</b></div>
+          <div><span class="k">Number of loads:</span><b><span id="sScanned">0</span> of <span id="sTotal">1</span></b></div>
+          <div><span class="k">Receiver name:</span><b id="sReceiver">Frank</b></div>
+        </div>
+
+        <div class="field" style="margin-bottom:14px;">
+          <label for="receiverName">Receiver name</label>
+          <input type="text" id="receiverName" placeholder="Enter receiver's name" value="Frank" oninput="onReceiverChange()" />
+        </div>
+
+        <div class="sig-wrap">
+          <canvas id="sigCanvas" width="700" height="230"></canvas>
+          <div id="sigHint" class="sig-hint">Sign here — use finger or stylus</div>
+        </div>
+
+        <div class="sig-actions">
+          <button class="btn-outline" onclick="clearSig()">Clear</button>
+          <button class="btn-submit" id="btnConfirm" onclick="confirmDelivery()" disabled>Submit</button>
+        </div>
+
+        <div class="step-dots" style="margin-top:14px;">
+          <span class="dot"></span><span class="dot"></span>
+          <span class="dot"></span><span class="dot active"></span>
+        </div>
+      </section>
+
+      <!-- Success overlay -->
+      <div class="success-overlay" id="successOverlay">
+        <div class="success-icon">✓</div>
+        <h3>POD confirmed</h3>
+        <p>Signature captured for <span class="code" id="okOrder">SO-1001</span><br/>
+           <span id="okLoads">1</span> load delivered · billing triggered in D365 F&amp;O.</p>
+        <button class="btn-submit" style="max-width:220px;" onclick="restart()">Return to home</button>
+      </div>
+
+      <div class="toast" id="toast"></div>
+
+      <div class="home-indicator"></div>
+    </div>
+  </div>
+
+  <div class="stage-foot">
+    <span class="kbd">←</span> Back &nbsp;·&nbsp;
+    <span class="kbd">Tab</span> Move &nbsp;·&nbsp;
+    <span>Single-load POD flow · any Load ID accepted</span>
+  </div>
+</div>
+<script>
+  /* ================= State ================= */
+  const state = {
+    page:     1,
+    orderId:  "",
+    validOrders: ["SO-1001","SO000000190"],   // any of these is accepted
+    totalLoads: 1,
+    // sample load IDs used only for the simulated scanner
+    validLoads: ["LD-1001-01"],
+    scanned:  [],   // { id, ts }
+    hasSignature: false,
+    receiver: "Frank",
+  };
+
+  /* ================= Navigation ================= */
+  function goTo(p){
+    state.page = p;
+    document.querySelectorAll('.screen').forEach(s => s.classList.remove('active'));
+    document.getElementById('screen' + p).classList.add('active');
+
+    const titles = {
+      1: "Delivery & Returns",
+      2: "Scan Order ID",
+      3: "Scan Load ID",
+      4: "Confirm Receipt of Goods"
+    };
+    document.getElementById('pageTitle').textContent = titles[p];
+    document.getElementById('backBtn').disabled = (p === 1);
+
+    // show/hide the sticky submit button per page
+    document.getElementById('submit2').style.display = (p === 2) ? 'block' : 'none';
+    document.getElementById('submit3').style.display = (p === 3) ? 'block' : 'none';
+
+    if(p === 4){
+      // hydrate summary
+      document.getElementById('sOrder').textContent    = state.orderId || 'SO-1001';
+      document.getElementById('sScanned').textContent  = state.scanned.length;
+      document.getElementById('sTotal').textContent    = state.totalLoads;
+      document.getElementById('sReceiver').textContent = state.receiver || '—';
+      // init canvas lazily
+      initCanvas();
+      updateConfirmEnable();
+    }
+  }
+
+  function goBack(){
+    if(state.page > 1) goTo(state.page - 1);
+  }
+
+  /* ================= Page 2: Order ID ================= */
+  function simScanOrder(){
+    const id = state.validOrders[0]; // SO-1001
+    document.getElementById('orderIdInput').value = id;
+    onOrderIdChange();
+    toast("Barcode scanned: " + id);
+  }
+  function onOrderIdChange(){
+    const v = document.getElementById('orderIdInput').value.trim();
+    state.orderId = v;
+    document.getElementById('btnSubmit2').disabled = v.length === 0;
+  }
+  function submitOrderId(){
+    if(!state.orderId){ return; }
+    if(!state.validOrders.some(o => o.toLowerCase() === state.orderId.toLowerCase())){
+      toast("Order ID not recognised in D365 F&O", true);
+      return;
+    }
+    // reset scans on entering page 3
+    state.scanned = [];
+    renderLoadList();
+    goTo(3);
+  }
+
+  /* ================= Page 3: Load IDs ================= */
+  function simScanLoad(){
+    // scan the next unscanned valid load
+    const next = state.validLoads.find(id => !state.scanned.some(s => s.id === id));
+    if(!next){
+      toast("All loads already scanned", true);
+      return;
+    }
+    document.getElementById('loadIdInput').value = next;
+    onLoadIdChange();
+    addLoad();
+    toast("Barcode scanned: " + next);
+  }
+  function onLoadIdChange(){
+    const v = document.getElementById('loadIdInput').value.trim();
+    document.getElementById('btnAddLoad').disabled = v.length === 0;
+  }
+  function addLoad(){
+    const input = document.getElementById('loadIdInput');
+    const v = input.value.trim().toUpperCase();
+    if(!v) return;
+
+    if(state.scanned.length >= state.totalLoads){
+      toast("Only " + state.totalLoads + " load allowed for this order", true);
+      return;
+    }
+    if(state.scanned.some(s => s.id === v)){
+      toast("Load " + v + " already scanned", true);
+      return;
+    }
+    // Accept any load ID against the current order (no whitelist)
+    state.scanned.push({ id:v, ts:new Date() });
+    input.value = "";
+    document.getElementById('btnAddLoad').disabled = true;
+    renderLoadList();
+  }
+  function removeLoad(id){
+    state.scanned = state.scanned.filter(s => s.id !== id);
+    renderLoadList();
+  }
+  function renderLoadList(){
+    const wrap = document.getElementById('loadList');
+    wrap.innerHTML = state.scanned.map(s => `
+      <div class="load-row">
+        <div class="load-info">
+          <div class="load-id">${s.id}</div>
+          <div class="load-ts">${fmtTs(s.ts)}</div>
+        </div>
+        <button class="load-remove" title="Remove" onclick="removeLoad('${s.id}')">✕</button>
+      </div>
+    `).join('');
+
+    document.getElementById('totalLoads').textContent  = state.totalLoads;
+    document.getElementById('scannedCount').textContent = state.scanned.length;
+    const missing = state.totalLoads - state.scanned.length;
+    const lbl = document.getElementById('missingLbl');
+    lbl.textContent = "Missing: " + missing;
+    lbl.style.color = missing === 0 ? 'var(--success)' : 'var(--danger)';
+
+    document.getElementById('btnSubmit3').disabled = state.scanned.length === 0;
+  }
+  function submitLoads(){
+    if(state.scanned.length === 0) return;
+    const missing = state.totalLoads - state.scanned.length;
+    if(missing > 0){
+      if(!confirm(`Only ${state.scanned.length} of ${state.totalLoads} loads scanned. Continue with ${missing} missing?`)){
+        return;
+      }
+    }
+    goTo(4);
+  }
+
+  function fmtTs(d){
+    const p = n => String(n).padStart(2,'0');
+    return `${d.getFullYear()}-${p(d.getMonth()+1)}-${p(d.getDate())} ${p(d.getHours())}:${p(d.getMinutes())}:${p(d.getSeconds())}`;
+  }
+
+  /* ================= Page 4: Signature ================= */
+  let sigCtx = null, drawing = false;
+
+  function initCanvas(){
+    const c = document.getElementById('sigCanvas');
+    const rect = c.getBoundingClientRect();
+    const dpr  = window.devicePixelRatio || 1;
+    // only (re)initialise if size hasn't been set
+    if(c.width !== rect.width * dpr){
+      c.width  = rect.width  * dpr;
+      c.height = rect.height * dpr;
+      sigCtx = c.getContext('2d');
+      sigCtx.scale(dpr, dpr);
+      sigCtx.lineWidth = 2.2;
+      sigCtx.lineCap = 'round';
+      sigCtx.lineJoin = 'round';
+      sigCtx.strokeStyle = '#0A1F3C';
+
+      const pos = (e) => {
+        const r = c.getBoundingClientRect();
+        const t = e.touches ? e.touches[0] : e;
+        return { x: t.clientX - r.left, y: t.clientY - r.top };
+      };
+      const start = (e) => {
+        drawing = true;
+        const p = pos(e);
+        sigCtx.beginPath(); sigCtx.moveTo(p.x, p.y);
+        state.hasSignature = true;
+        document.getElementById('sigHint').classList.add('hidden');
+        updateConfirmEnable();
+      };
+      const move = (e) => {
+        if(!drawing) return; e.preventDefault();
+        const p = pos(e); sigCtx.lineTo(p.x, p.y); sigCtx.stroke();
+      };
+      const end = () => { drawing = false; };
+      c.addEventListener('mousedown', start);
+      c.addEventListener('mousemove', move);
+      window.addEventListener('mouseup', end);
+      c.addEventListener('touchstart', start, { passive:false });
+      c.addEventListener('touchmove',  move,  { passive:false });
+      c.addEventListener('touchend',   end);
+    }
+  }
+
+  function clearSig(){
+    const c = document.getElementById('sigCanvas');
+    if(!sigCtx) return;
+    sigCtx.clearRect(0, 0, c.width, c.height);
+    state.hasSignature = false;
+    document.getElementById('sigHint').classList.remove('hidden');
+    updateConfirmEnable();
+  }
+
+  function onReceiverChange(){
+    state.receiver = document.getElementById('receiverName').value.trim();
+    document.getElementById('sReceiver').textContent = state.receiver || '—';
+    updateConfirmEnable();
+  }
+
+  function updateConfirmEnable(){
+    const btn = document.getElementById('btnConfirm');
+    btn.disabled = !(state.hasSignature && state.receiver && state.receiver.length > 0);
+  }
+
+  function confirmDelivery(){
+    document.getElementById('okOrder').textContent = state.orderId || 'SO-1001';
+    document.getElementById('okLoads').textContent = state.scanned.length;
+    document.getElementById('successOverlay').classList.add('show');
+  }
+
+  function restart(){
+    // full reset
+    state.orderId = ""; state.scanned = []; state.hasSignature = false; state.receiver = "Frank";
+    document.getElementById('orderIdInput').value = "";
+    document.getElementById('loadIdInput').value  = "";
+    document.getElementById('receiverName').value = "Frank";
+    renderLoadList();
+    document.getElementById('btnSubmit2').disabled = true;
+    document.getElementById('btnAddLoad').disabled = true;
+    document.getElementById('successOverlay').classList.remove('show');
+    // clear canvas if it was initialised
+    if(sigCtx){ clearSig(); }
+    goTo(1);
+  }
+
+  /* ================= Toast ================= */
+  let toastTimer = null;
+  function toast(msg, isError){
+    const t = document.getElementById('toast');
+    t.textContent = msg;
+    t.classList.toggle('error', !!isError);
+    t.classList.add('show');
+    clearTimeout(toastTimer);
+    toastTimer = setTimeout(() => t.classList.remove('show'), 2200);
+  }
+
+  /* ================= Boot ================= */
+  document.addEventListener('DOMContentLoaded', () => {
+    renderLoadList();
+
+    // keyboard shortcut: ← to go back
+    document.addEventListener('keydown', (e) => {
+      if(e.key === 'ArrowLeft' && !['INPUT','TEXTAREA'].includes(document.activeElement?.tagName)){
+        goBack();
+      }
+    });
+
+    // Enter on order-id input submits
+    document.getElementById('orderIdInput').addEventListener('keydown', (e) => {
+      if(e.key === 'Enter' && !document.getElementById('btnSubmit2').disabled) submitOrderId();
+    });
+    document.getElementById('loadIdInput').addEventListener('keydown', (e) => {
+      if(e.key === 'Enter' && !document.getElementById('btnAddLoad').disabled) addLoad();
+    });
+  });
+</script>
+
+</body>
+</html>
