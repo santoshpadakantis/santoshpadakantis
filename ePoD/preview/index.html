@@ -1,9 +1,9 @@
-<!DOCTYPE html>
+﻿<!DOCTYPE html>
 <html lang="en">
 <head>
 <meta charset="UTF-8" />
 <meta name="viewport" content="width=device-width, initial-scale=1.0" />
-<title>Downer ePoD — Loads (D365 F&O)</title>
+<title>Downer ePoD â€” Loads (D365 F&O)</title>
 <style>
   :root{
     --downer-red:   #E4002B;   /* Downer brand red */
@@ -397,7 +397,7 @@
       <div class="statusbar">
         <span>9:41</span>
         <span class="icons">
-          <span>●●●●●</span>
+          <span>â—â—â—â—â—</span>
           <svg viewBox="0 0 16 12" fill="currentColor"><path d="M0 10h3v2H0zm5-3h3v5H5zm5-3h3v8h-3zm5-4h1v12h-1z"/></svg>
           <svg viewBox="0 0 20 12" fill="none" stroke="currentColor" stroke-width="1.5"><rect x=".75" y=".75" width="17" height="10.5" rx="2.5"/><rect x="2.5" y="2.5" width="12" height="7" rx="1" fill="currentColor" stroke="none"/><rect x="18.5" y="4" width="1.2" height="4" fill="currentColor" stroke="none"/></svg>
         </span>
@@ -405,7 +405,7 @@
 
       <!-- App bar -->
       <div class="appbar">
-        <button class="back-btn" id="backBtn" onclick="goBack()">←</button>
+        <button class="back-btn" id="backBtn" onclick="goBack()">â†</button>
         <span class="appbar-title" id="pageTitle">Sign in</span>
         <button class="userchip" id="userChip" onclick="signOut()" style="display:none;" title="Sign out">
           <span class="av" id="userAv">D</span>
@@ -416,17 +416,9 @@
       <!-- Brand -->
       <div class="brand">
         <span class="brand-mark" aria-label="Downer">
-          <svg viewBox="0 0 232 60" xmlns="http://www.w3.org/2000/svg" role="img" aria-label="Downer">
-            <text x="0" y="47"
-                  font-family="Segoe UI, Arial Black, Helvetica, sans-serif"
-                  font-weight="900" font-size="54" fill="#111"
-                  letter-spacing="-1.5">Downer</text>
-            <!-- brand mark: black square top, cyan square bottom -->
-            <rect x="196" y="6"  width="22" height="22" fill="#111"/>
-            <rect x="196" y="32" width="22" height="22" fill="#6EC7D3"/>
-          </svg>
+          <img src="data:image/png;base64,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" alt="Downer" />
         </span>
-        <span class="brand-sub">Proof of delivery · D365 F&amp;O</span>
+        <span class="brand-sub">Proof of delivery Â· D365 F&amp;O</span>
       </div>
 
       <!-- ============ SCREEN 0: Login ============ -->
@@ -448,8 +440,8 @@
           <button class="btn-signin" id="btnSignIn" onclick="signIn()" disabled>Sign in</button>
 
           <div class="login-links">
-            <a onclick="toast('Prototype — SSO not wired up')">Use SSO</a>
-            <a onclick="toast('Prototype — password reset not wired up')">Forgot password?</a>
+            <a onclick="toast('Prototype â€” SSO not wired up')">Use SSO</a>
+            <a onclick="toast('Prototype â€” password reset not wired up')">Forgot password?</a>
           </div>
         </div>
       </section>
@@ -459,7 +451,7 @@
         <h2 class="section">Select an Option</h2>
 
         <div class="option-card">
-          <div class="oi">🚚</div>
+          <div class="oi">ðŸšš</div>
           <div>
             <div class="ol">Delivery</div>
             <div class="os">Deliver loads and capture receiver signature</div>
@@ -468,7 +460,7 @@
         </div>
 
         <div class="option-card">
-          <div class="oi">↩️</div>
+          <div class="oi">â†©ï¸</div>
           <div>
             <div class="ol">Return Pick Up</div>
             <div class="os">Collect returned mix from customer site</div>
@@ -491,7 +483,7 @@
           <div class="scan-frame">
             <span class="cornerTR"></span><span class="cornerBR"></span>
           </div>
-          <button class="scan-btn" onclick="simScanOrder()">📷&nbsp; Scan Barcode</button>
+          <button class="scan-btn" onclick="simScanOrder()">ðŸ“·&nbsp; Scan Barcode</button>
         </div>
 
         <div class="divider-or">Enter Order ID Manually</div>
@@ -515,14 +507,14 @@
       <section class="screen" id="screen3">
         <h2 class="section">Scan Load ID</h2>
 
-        <button class="scan-btn" style="width:100%; padding:12px;" onclick="simScanLoad()">📷&nbsp; Scan Barcode</button>
+        <button class="scan-btn" style="width:100%; padding:12px;" onclick="simScanLoad()">ðŸ“·&nbsp; Scan Barcode</button>
 
         <div class="field">
           <label for="loadIdInput">Enter Load ID manually</label>
           <input type="text" id="loadIdInput" placeholder="e.g. LD-1001-05" oninput="onLoadIdChange()" />
         </div>
 
-        <button class="btn-add" id="btnAddLoad" onclick="addLoad()" disabled>＋ Add</button>
+        <button class="btn-add" id="btnAddLoad" onclick="addLoad()" disabled>ï¼‹ Add</button>
 
         <div class="scanned-header">
           <span class="scanned-title">Scanned Barcode</span>
@@ -530,7 +522,7 @@
         </div>
         <div class="scanned-count">
           Total no. of loads: <b id="totalLoads">1</b>
-          &nbsp;·&nbsp; Total scanned loads: <b id="scannedCount">0</b>
+          &nbsp;Â·&nbsp; Total scanned loads: <b id="scannedCount">0</b>
         </div>
 
         <div id="loadList"></div>
@@ -559,7 +551,7 @@
 
         <div class="capture-row">
           <button type="button" class="capture-chip" id="photoChip" onclick="triggerPhoto()">
-            <div class="ci" id="photoIcon">📷</div>
+            <div class="ci" id="photoIcon">ðŸ“·</div>
             <div class="cbody">
               <div class="cl">Capture photo</div>
               <div class="cs" id="photoStatus">Optional</div>
@@ -569,7 +561,7 @@
                  style="display:none;" onchange="onPhotoPicked(event)" />
 
           <button type="button" class="capture-chip" id="geoChip" onclick="captureLocation()">
-            <div class="ci" id="geoIcon">📍</div>
+            <div class="ci" id="geoIcon">ðŸ“</div>
             <div class="cbody">
               <div class="cl">Location tag</div>
               <div class="cs" id="geoStatus">Optional</div>
@@ -579,7 +571,7 @@
 
         <div class="sig-wrap">
           <canvas id="sigCanvas" width="700" height="230"></canvas>
-          <div id="sigHint" class="sig-hint">Sign here — use finger or stylus</div>
+          <div id="sigHint" class="sig-hint">Sign here â€” use finger or stylus</div>
         </div>
 
         <div class="sig-actions">
@@ -595,10 +587,10 @@
 
       <!-- Success overlay -->
       <div class="success-overlay" id="successOverlay">
-        <div class="success-icon">✓</div>
+        <div class="success-icon">âœ“</div>
         <h3>POD confirmed</h3>
         <p>Signature captured for <span class="code" id="okOrder">SO-1001</span><br/>
-           <span id="okLoads">1</span> load delivered · billing triggered in D365 F&amp;O.</p>
+           <span id="okLoads">1</span> load delivered Â· billing triggered in D365 F&amp;O.</p>
         <button class="btn-submit" style="max-width:220px;" onclick="restart()">Return to home</button>
       </div>
 
@@ -653,7 +645,7 @@
       document.getElementById('sOrder').textContent    = state.orderId || 'SO-1001';
       document.getElementById('sScanned').textContent  = state.scanned.length;
       document.getElementById('sTotal').textContent    = state.totalLoads;
-      document.getElementById('sReceiver').textContent = state.receiver || '—';
+      document.getElementById('sReceiver').textContent = state.receiver || 'â€”';
       // init canvas lazily
       initCanvas();
       updateConfirmEnable();
@@ -764,7 +756,7 @@
           <div class="load-id">${s.id}</div>
           <div class="load-ts">${fmtTs(s.ts)}</div>
         </div>
-        <button class="load-remove" title="Remove" onclick="removeLoad('${s.id}')">✕</button>
+        <button class="load-remove" title="Remove" onclick="removeLoad('${s.id}')">âœ•</button>
       </div>
     `).join('');
 
@@ -849,7 +841,7 @@
 
   function onReceiverChange(){
     state.receiver = document.getElementById('receiverName').value.trim();
-    document.getElementById('sReceiver').textContent = state.receiver || '—';
+    document.getElementById('sReceiver').textContent = state.receiver || 'â€”';
     updateConfirmEnable();
   }
 
@@ -870,7 +862,7 @@
       state.photoDataUrl = ev.target.result;
       document.getElementById('photoIcon').innerHTML =
         `<img alt="POD photo" src="${state.photoDataUrl}"/>`;
-      const name = f.name.length > 22 ? f.name.slice(0,22) + '…' : f.name;
+      const name = f.name.length > 22 ? f.name.slice(0,22) + 'â€¦' : f.name;
       document.getElementById('photoStatus').textContent = name;
       document.getElementById('photoChip').classList.add('done');
       toast('Photo captured');
@@ -883,13 +875,13 @@
       toast('Geolocation not supported', true);
       return;
     }
-    st.textContent = 'Locating…';
+    st.textContent = 'Locatingâ€¦';
     navigator.geolocation.getCurrentPosition(
       (pos) => {
         const lat = pos.coords.latitude.toFixed(5);
         const lng = pos.coords.longitude.toFixed(5);
         state.geo = { lat, lng, ts: new Date() };
-        document.getElementById('geoIcon').textContent = '✓';
+        document.getElementById('geoIcon').textContent = 'âœ“';
         st.textContent = `${lat}, ${lng}`;
         document.getElementById('geoChip').classList.add('done');
         toast('Location stamped');
@@ -906,11 +898,11 @@
     state.photoDataUrl = null;
     state.geo = null;
     const pi = document.getElementById('photoIcon');
-    if(pi){ pi.textContent = '📷'; }
+    if(pi){ pi.textContent = 'ðŸ“·'; }
     const ps = document.getElementById('photoStatus');
     if(ps){ ps.textContent = 'Optional'; }
     const gi = document.getElementById('geoIcon');
-    if(gi){ gi.textContent = '📍'; }
+    if(gi){ gi.textContent = 'ðŸ“'; }
     const gs = document.getElementById('geoStatus');
     if(gs){ gs.textContent = 'Optional'; }
     document.getElementById('photoChip')?.classList.remove('done');
@@ -960,7 +952,7 @@
   document.addEventListener('DOMContentLoaded', () => {
     renderLoadList();
 
-    // keyboard shortcut: ← to go back
+    // keyboard shortcut: â† to go back
     document.addEventListener('keydown', (e) => {
       if(e.key === 'ArrowLeft' && !['INPUT','TEXTAREA'].includes(document.activeElement?.tagName)){
         goBack();
