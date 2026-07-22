@@ -250,6 +250,32 @@
   .order-summary b{ color:var(--ink); }
   .order-summary .k{ color:var(--ink-2); display:inline-block; min-width:110px; }
 
+  /* -------- POD capture chips (Page 4) -------- */
+  .capture-row{
+    display:grid; grid-template-columns:1fr 1fr; gap:10px; margin-bottom:14px;
+  }
+  .capture-chip{
+    display:flex; align-items:center; gap:10px; padding:10px 12px;
+    background:#fff; border:1px solid var(--line-2); border-radius:10px;
+    cursor:pointer; font-family:inherit; text-align:left; width:100%;
+  }
+  .capture-chip:hover{ background:var(--panel-alt); }
+  .capture-chip .ci{
+    width:36px; height:36px; border-radius:8px; background:var(--panel-alt);
+    display:grid; place-items:center; font-size:18px; flex-shrink:0;
+    overflow:hidden; color:var(--downer-navy);
+  }
+  .capture-chip .ci img{ width:100%; height:100%; object-fit:cover; }
+  .capture-chip .cbody{ flex:1; min-width:0; }
+  .capture-chip .cl{ font-size:13px; font-weight:600; color:var(--ink); line-height:1.2; }
+  .capture-chip .cs{
+    font-size:11px; color:var(--ink-2); margin-top:2px;
+    white-space:nowrap; overflow:hidden; text-overflow:ellipsis;
+  }
+  .capture-chip.done{ border-color:var(--success); background:#F1FAF4; }
+  .capture-chip.done .ci{ background:var(--success); color:#fff; }
+  .capture-chip.done .cs{ color:var(--success); font-weight:600; }
+
   /* -------- Signature pad -------- */
   .sig-wrap{
     background:#F9FBFD; border:1px dashed var(--line-2); border-radius:10px;
@@ -532,6 +558,26 @@
           <input type="text" id="receiverName" placeholder="Enter receiver's name" value="Frank" oninput="onReceiverChange()" />
         </div>
 
+        <div class="capture-row">
+          <button type="button" class="capture-chip" id="photoChip" onclick="triggerPhoto()">
+            <div class="ci" id="photoIcon">📷</div>
+            <div class="cbody">
+              <div class="cl">Capture photo</div>
+              <div class="cs" id="photoStatus">Optional</div>
+            </div>
+          </button>
+          <input type="file" id="photoInput" accept="image/*" capture="environment"
+                 style="display:none;" onchange="onPhotoPicked(event)" />
+
+          <button type="button" class="capture-chip" id="geoChip" onclick="captureLocation()">
+            <div class="ci" id="geoIcon">📍</div>
+            <div class="cbody">
+              <div class="cl">Location tag</div>
+              <div class="cs" id="geoStatus">Optional</div>
+            </div>
+          </button>
+        </div>
+
         <div class="sig-wrap">
           <canvas id="sigCanvas" width="700" height="230"></canvas>
           <div id="sigHint" class="sig-hint">Sign here — use finger or stylus</div>
@@ -576,6 +622,8 @@
     scanned:  [],   // { id, ts }
     hasSignature: false,
     receiver: "Frank",
+    photoDataUrl: null,
+    geo: null,   // { lat, lng, ts }
   };
 
   /* ================= Navigation ================= */
@@ -811,6 +859,67 @@
     btn.disabled = !(state.hasSignature && state.receiver && state.receiver.length > 0);
   }
 
+  /* ------------- Photo & Location capture ------------- */
+  function triggerPhoto(){
+    document.getElementById('photoInput').click();
+  }
+  function onPhotoPicked(e){
+    const f = e.target.files && e.target.files[0];
+    if(!f) return;
+    const reader = new FileReader();
+    reader.onload = (ev) => {
+      state.photoDataUrl = ev.target.result;
+      document.getElementById('photoIcon').innerHTML =
+        `<img alt="POD photo" src="${state.photoDataUrl}"/>`;
+      const name = f.name.length > 22 ? f.name.slice(0,22) + '…' : f.name;
+      document.getElementById('photoStatus').textContent = name;
+      document.getElementById('photoChip').classList.add('done');
+      toast('Photo captured');
+    };
+    reader.readAsDataURL(f);
+  }
+  function captureLocation(){
+    const st = document.getElementById('geoStatus');
+    if(!navigator.geolocation){
+      toast('Geolocation not supported', true);
+      return;
+    }
+    st.textContent = 'Locating…';
+    navigator.geolocation.getCurrentPosition(
+      (pos) => {
+        const lat = pos.coords.latitude.toFixed(5);
+        const lng = pos.coords.longitude.toFixed(5);
+        state.geo = { lat, lng, ts: new Date() };
+        document.getElementById('geoIcon').textContent = '✓';
+        st.textContent = `${lat}, ${lng}`;
+        document.getElementById('geoChip').classList.add('done');
+        toast('Location stamped');
+      },
+      (err) => {
+        st.textContent = 'Optional';
+        toast('Location unavailable: ' + err.message, true);
+      },
+      { enableHighAccuracy: true, timeout: 10000, maximumAge: 0 }
+    );
+  }
+
+  function resetCaptureChips(){
+    state.photoDataUrl = null;
+    state.geo = null;
+    const pi = document.getElementById('photoIcon');
+    if(pi){ pi.textContent = '📷'; }
+    const ps = document.getElementById('photoStatus');
+    if(ps){ ps.textContent = 'Optional'; }
+    const gi = document.getElementById('geoIcon');
+    if(gi){ gi.textContent = '📍'; }
+    const gs = document.getElementById('geoStatus');
+    if(gs){ gs.textContent = 'Optional'; }
+    document.getElementById('photoChip')?.classList.remove('done');
+    document.getElementById('geoChip')?.classList.remove('done');
+    const pin = document.getElementById('photoInput');
+    if(pin){ pin.value = ''; }
+  }
+
   function confirmDelivery(){
     document.getElementById('okOrder').textContent = state.orderId || 'SO-1001';
     document.getElementById('okLoads').textContent = state.scanned.length;
@@ -832,6 +941,7 @@
     document.getElementById('btnSubmit2').disabled = true;
     document.getElementById('btnAddLoad').disabled = true;
     document.getElementById('successOverlay').classList.remove('show');
+    resetCaptureChips();
     // clear canvas if it was initialised
     if(sigCtx){ clearSig(); }
   }
