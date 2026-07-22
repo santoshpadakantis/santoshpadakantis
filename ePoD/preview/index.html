@@ -104,6 +104,19 @@
   .screen::-webkit-scrollbar{ width:6px; }
   .screen::-webkit-scrollbar-thumb{ background:var(--line-2); border-radius:3px; }
 
+  /* -------- Responsive: collapse phone frame to fill small viewports -------- */
+  @media (max-width: 480px), (max-height: 880px){
+    body{ padding:0; min-height:100vh; min-height:100dvh; }
+    .stage{ gap:0; }
+    .stage-title, .stage-foot{ display:none; }
+    .phone{
+      width:100vw; height:100vh; height:100dvh;
+      border-radius:0; box-shadow:none; padding:0;
+    }
+    .phone-inner{ border-radius:0; }
+    .notch{ display:none; }
+  }
+
   h2.section{
     font-size:20px; font-weight:700; color:var(--ink); margin:14px 0 6px;
   }
