@@ -470,7 +470,7 @@
             <div class="ol">Delivery</div>
             <div class="os">Deliver loads and capture receiver signature</div>
           </div>
-          <button class="select-btn" onclick="goTo(2)">Select</button>
+          <button class="select-btn" onclick="selectFlow('delivery')">Select</button>
         </div>
 
         <div class="option-card">
@@ -479,7 +479,7 @@
             <div class="ol">Return Pick Up</div>
             <div class="os">Collect returned mix from customer site</div>
           </div>
-          <button class="select-btn" onclick="goTo(2)">Select</button>
+          <button class="select-btn" onclick="selectFlow('return')">Select</button>
         </div>
 
         <div class="step-dots">
@@ -553,7 +553,7 @@
         <div class="order-summary">
           <div><span class="k">Order ID:</span><b id="sOrder">SO-1001</b></div>
           <div><span class="k">Delivery name:</span><b id="sCust">Metro Civil Pty Ltd</b></div>
-          <div><span class="k">Product:</span><b>AC20M 30% RAP C450</b></div>
+          <div><span class="k">Product:</span><b id="sProduct">AC20M 30% RAP C450</b></div>
           <div><span class="k">Number of loads:</span><b><span id="sScanned">0</span> of <span id="sTotal">1</span></b></div>
           <div><span class="k">Receiver name:</span><b id="sReceiver">Frank</b></div>
         </div>
@@ -619,8 +619,9 @@
   const state = {
     page:     0,
     user:     "",
+    mode:     "delivery",   // "delivery" | "return"
     orderId:  "",
-    validOrders: ["SO-1001","SO000000190"],   // any of these is accepted
+    validOrders: ["SO-1001","SO000000190"],   // per-flow list, swapped by selectFlow()
     totalLoads: 1,
     // sample load IDs used only for the simulated scanner
     validLoads: ["LD-1001-01"],
@@ -656,7 +657,9 @@
 
     if(p === 4){
       // hydrate summary
-      document.getElementById('sOrder').textContent    = state.orderId || 'SO-1001';
+      document.getElementById('sOrder').textContent    = state.orderId || state.validOrders[0];
+      document.getElementById('sCust').textContent     = (FLOWS[state.mode] || FLOWS.delivery).customer;
+      document.getElementById('sProduct').textContent  = (FLOWS[state.mode] || FLOWS.delivery).product;
       document.getElementById('sScanned').textContent  = state.scanned.length;
       document.getElementById('sTotal').textContent    = state.totalLoads;
       document.getElementById('sReceiver').textContent = state.receiver || '—';
@@ -696,6 +699,39 @@
     // also reset the delivery workflow
     resetWorkflow();
     goTo(0);
+  }
+
+  /* ================= Flow selection (Delivery / Return) ================= */
+  const FLOWS = {
+    delivery: {
+      validOrders: ["SO-1001","SO000000190"],
+      validLoads:  ["LD-1001-01"],
+      orderPlaceholder: "Enter Order ID",
+      loadPlaceholder:  "e.g. LD-1001-05",
+      customer: "Metro Civil Pty Ltd",
+      product:  "AC20M 30% RAP C450"
+    },
+    return: {
+      validOrders: ["00031"],
+      validLoads:  ["00031"],
+      orderPlaceholder: "Enter Return Order (e.g. 00031)",
+      loadPlaceholder:  "e.g. 00031",
+      customer: "Metro Civil Pty Ltd",
+      product:  "Returned mix"
+    }
+  };
+  function selectFlow(mode){
+    state.mode        = mode;
+    const f           = FLOWS[mode];
+    state.validOrders = f.validOrders.slice();
+    state.validLoads  = f.validLoads.slice();
+    state.orderId     = "";
+    state.scanned     = [];
+    document.getElementById("orderIdInput").value       = "";
+    document.getElementById("orderIdInput").placeholder = f.orderPlaceholder;
+    document.getElementById("loadIdInput").placeholder  = f.loadPlaceholder;
+    document.getElementById("btnSubmit2").disabled      = true;
+    goTo(2);
   }
 
   /* ================= Page 2: Order ID ================= */
@@ -926,7 +962,7 @@
   }
 
   function confirmDelivery(){
-    document.getElementById('okOrder').textContent = state.orderId || 'SO-1001';
+    document.getElementById('okOrder').textContent = state.orderId || state.validOrders[0];
     document.getElementById('okLoads').textContent = state.scanned.length;
     document.getElementById('successOverlay').classList.add('show');
   }
